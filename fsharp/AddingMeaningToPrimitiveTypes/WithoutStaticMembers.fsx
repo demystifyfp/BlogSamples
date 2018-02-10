@@ -40,21 +40,22 @@ let balance transactions =
   |> Money
 
 
-let rec private getExpenses' expenseCategory transactions expenses =
+let rec private getExpenses' transactions expenses =
   match transactions with
   | [] -> expenses
   | x :: xs -> 
     match x with
-    | Debit expense when expense.Category = expenseCategory ->
+    | Debit expense ->
       (expense :: expenses)
-      |> getExpenses' expenseCategory xs
-    | _ -> getExpenses' expenseCategory xs expenses
+      |> getExpenses' xs
+    | _ -> getExpenses' xs expenses
 
-let getExpenses expenseCategory transactions =
-  getExpenses' expenseCategory transactions []
+let getExpenses transactions =
+  getExpenses' transactions []
 
 let getExpenditure expenseCategory transactions =
-  getExpenses expenseCategory transactions
+  getExpenses transactions
+  |> List.filter (fun e -> e.Category = expenseCategory)
   |> List.map (fun expense -> 
     let (Money m) = expense.Amount 
     m

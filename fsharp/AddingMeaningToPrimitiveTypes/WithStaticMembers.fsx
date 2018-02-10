@@ -9,6 +9,8 @@ type ExpenseCategory =
 
 type Money = Money of decimal with
   static member (+) (Money m1, Money m2) = Money (m1 + m2)
+
+  static member (~-) (Money m1) = Money -m1
   static member get_Zero() = Money 0m
   static member DivideByInt ((Money m), (x : int)) = 
     Decimal.Divide(m, Convert.ToDecimal(x))
@@ -29,40 +31,34 @@ type Transaction =
 | Credit of Income 
 | Debit of Expense
 
-
-
 // Transaction list -> Money
 let balance transactions =
   transactions
   |> List.map (
     function
-    | Credit x -> 
-      let (Money m) = x.Amount 
-      m
-    | Debit y ->
-      let (Money m) = y.Amount
-      -m
+    | Credit x -> x.Amount
+    | Debit y -> -y.Amount
   )
   |> List.sum
-  |> Money
 
 
-let rec private getExpenses' expenseCategory transactions expenses =
+let rec private getExpenses' transactions expenses =
   match transactions with
   | [] -> expenses
   | x :: xs -> 
     match x with
-    | Debit expense when expense.Category = expenseCategory ->
+    | Debit expense ->
       (expense :: expenses)
-      |> getExpenses' expenseCategory xs
-    | _ -> getExpenses' expenseCategory xs expenses
+      |> getExpenses' xs
+    | _ -> getExpenses' xs expenses
 
-let getExpenses expenseCategory transactions =
-  getExpenses' expenseCategory transactions []
+let getExpenses transactions =
+  getExpenses' transactions []
 
 let getExpenditure expenseCategory transactions =
-  getExpenses expenseCategory transactions
-  |> List.sumBy (fun expense -> expense.Amount)
+  getExpenses transactions
+  |> List.filter (fun e -> e.Category = expenseCategory)
+  |> List.sumBy (fun e -> e.Amount)
 
 // ExpenseCategory -> Transaction list list -> Money
 let averageExpenditure expenseCategory transactionsList =
