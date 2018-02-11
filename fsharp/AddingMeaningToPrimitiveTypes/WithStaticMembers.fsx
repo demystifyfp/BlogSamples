@@ -42,7 +42,9 @@ let balance transactions =
   |> List.sum
 
 
-let rec private getExpenses' transactions expenses =
+let rec getExpenses transactions =
+  getExpenses' transactions []
+and getExpenses' transactions expenses =
   match transactions with
   | [] -> expenses
   | x :: xs -> 
@@ -51,9 +53,6 @@ let rec private getExpenses' transactions expenses =
       (expense :: expenses)
       |> getExpenses' xs
     | _ -> getExpenses' xs expenses
-
-let getExpenses transactions =
-  getExpenses' transactions []
 
 let getExpenditure expenseCategory transactions =
   getExpenses transactions
