@@ -57,11 +57,10 @@ and getExpenses' transactions expenses =
 let getExpenditure expenseCategory transactions =
   getExpenses transactions
   |> List.filter (fun e -> e.Category = expenseCategory)
-  |> List.map (fun expense -> 
+  |> List.sumBy (fun expense -> 
     let (Money m) = expense.Amount 
     m
   )
-  |> List.sum
   |> Money
 
 
