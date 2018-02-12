@@ -11,7 +11,7 @@ type Money = Money of decimal with
   static member (+) (Money m1, Money m2) = Money (m1 + m2)
 
   static member (~-) (Money m1) = Money -m1
-  static member get_Zero() = Money 0m
+  static member Zero = Money 0m
   static member DivideByInt ((Money m), (x : int)) = 
     Decimal.Divide(m, Convert.ToDecimal(x))
     |> Money
