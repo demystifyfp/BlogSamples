@@ -5,10 +5,10 @@
 open Hopac
 
 type JobStatus =
-| Started of int
-| Completed of int
+| Started of jobId : int
+| Completed of jobId : int
 
-let rec jobStatusPrinterJob jobStatusChannel = job {
+let jobStatusPrinterJob jobStatusChannel = job {
   let! jobStatus = Ch.take jobStatusChannel
   match jobStatus with
   | Started jobId -> 
@@ -33,4 +33,6 @@ let main jobStatusChannel jobsCount = job {
 let jobStatusChannel = Ch<JobStatus>()
 let jobsCount =  5 
 
+#time "on"
 main jobStatusChannel jobsCount |> run
+#time "off"
