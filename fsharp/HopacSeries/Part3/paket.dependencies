@@ -1,0 +1,6 @@
+source https://www.nuget.org/api/v2
+framework: net461
+nuget FSharp.Data
+nuget Hopac
+nuget Http.Fs
+nuget System.Net.Http

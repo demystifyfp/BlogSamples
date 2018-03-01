@@ -1,0 +1,19 @@
+RESTRICTION: == net461
+NUGET
+  remote: https://www.nuget.org/api/v2
+    FSharp.Core (4.3.4)
+    FSharp.Data (2.4.5)
+    Hopac (0.3.23)
+      FSharp.Core (>= 3.1.2.5)
+    Http.fs (5.0.1)
+      FSharp.Core (>= 4.1.18)
+      Hopac (>= 0.3.23)
+    System.Net.Http (4.3.3)
+      System.Security.Cryptography.X509Certificates (>= 4.3)
+    System.Security.Cryptography.Algorithms (4.3.1)
+      System.Security.Cryptography.Primitives (>= 4.3)
+    System.Security.Cryptography.Encoding (4.3)
+    System.Security.Cryptography.Primitives (4.3)
+    System.Security.Cryptography.X509Certificates (4.3.2)
+      System.Security.Cryptography.Algorithms (>= 4.3)
+      System.Security.Cryptography.Encoding (>= 4.3)
