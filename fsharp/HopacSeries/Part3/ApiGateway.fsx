@@ -23,15 +23,41 @@ let httpGet url =
   |> getResponse
   |> Job.bind Response.readBodyAsString
 
-let host = "https://api.github.com"
-let userUrl = sprintf "%s/users/%s" host
+type GitHubResponse = {
+  Body : string
+  NextPageUrl : string option
+}
+
+let getNextPageUrl (linkText : string) = 
+  linkText.Split([|','|])
+  |> Array.map (fun l -> l.Split([|';'|]))
+  |> Array.tryFind(fun l -> l.Length = 2 && l.[1].Contains("next"))
+  |> Option.map(fun l -> l.[0].Trim().TrimStart('<').TrimEnd('>'))
+
+let gitHubResponse response = job {
+  let! body = Response.readBodyAsString response
+  let nextPageUrl =
+    match response.headers.TryFind(ResponseHeader.Link) with
+    | Some linkText -> getNextPageUrl linkText
+    | None -> None
+  return {Body = body; NextPageUrl = nextPageUrl}
+}
+
+let httpGetWithPagination url =
+  Request.createUrl Get url 
+  |> Request.setHeader (UserAgent "FsHopac")
+  |> getResponse
+  |> Job.bind gitHubResponse
+
+let basePath = "https://api.github.com"
+let userUrl = sprintf "%s/users/%s" basePath
 
 let getUser username : Job<User> =
   userUrl username
   |> httpGet
   |> Job.map UserTypeProvider.Parse
 
-let userReposUrl = sprintf "%s/users/%s/repos" host
+let userReposUrl = sprintf "%s/users/%s/repos?per_page=100" basePath
 
 let topThreeUserRepos (repos : Repo []) =
   let takeCount =
@@ -42,14 +68,30 @@ let topThreeUserRepos (repos : Repo []) =
   |> Array.sortByDescending (fun repo -> repo.StargazersCount)
   |> Array.take takeCount
 
+let getUserAllRepos username =
+  let rec getUserAllRepos' url (repos : Repo list) = job {
+    let! gitHubResponse = 
+      httpGetWithPagination url
+    let currentPageRepos = 
+      gitHubResponse.Body
+      |> ReposTypeProvider.Parse
+      |> Array.toList
+    let reposSoFar = repos @ currentPageRepos
+    match gitHubResponse.NextPageUrl with
+    | Some nextPageUrl ->
+       return! getUserAllRepos' nextPageUrl reposSoFar
+    | None -> return reposSoFar
+  }
+  getUserAllRepos' (userReposUrl username) []
+  |> Job.map (List.toArray)
+
 let getTopThreeUserRepos username : Job<Repo []> =
-  userReposUrl username
-  |> httpGet
-  |> Job.map ReposTypeProvider.Parse
+  getUserAllRepos username
   |> Job.map topThreeUserRepos
 
+
 let languagesUrl userName repoName  = 
-  sprintf "%s/repos/%s/%s/languages" host userName repoName
+  sprintf "%s/repos/%s/%s/languages" basePath userName repoName
 
 let parseLanguagesJson languagesJson =
   languagesJson
@@ -99,3 +141,7 @@ let getUserDto username = job {
     TopThreeRepos = repoDtos.ToArray()
   }
 }
+
+#time "on"
+getUserDto "haf" |> run
+#time "off"
