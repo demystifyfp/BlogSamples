@@ -16,13 +16,6 @@ type User = UserTypeProvider.Root
 type ReposTypeProvider = JsonProvider<"https://api.github.com/users/tamizhvendan/repos">
 type Repo = ReposTypeProvider.Root
 
-
-let httpGet url =
-  Request.createUrl Get url 
-  |> Request.setHeader (UserAgent "FsHopac")
-  |> getResponse
-  |> Job.bind Response.readBodyAsString
-
 type GitHubResponse = {
   Body : string
   NextPageUrl : string option
@@ -43,19 +36,29 @@ let gitHubResponse response = job {
   return {Body = body; NextPageUrl = nextPageUrl}
 }
 
+let log msg x =
+  printfn "%s" msg
+  x
+
 let httpGetWithPagination url =
   Request.createUrl Get url 
   |> Request.setHeader (UserAgent "FsHopac")
   |> getResponse
   |> Job.bind gitHubResponse
 
+let httpGet url =
+  httpGetWithPagination url
+  |> Job.map (fun r -> r.Body)
+
 let basePath = "https://api.github.com"
 let userUrl = sprintf "%s/users/%s" basePath
 
 let getUser username : Job<User> =
   userUrl username
+  |> log ("Request: " + username)
   |> httpGet
   |> Job.map UserTypeProvider.Parse
+  |> Job.map (log ("Response: " + username))
 
 let userReposUrl = sprintf "%s/users/%s/repos?per_page=100" basePath
 
@@ -70,8 +73,10 @@ let topThreeUserRepos (repos : Repo []) =
 
 let getUserAllRepos username =
   let rec getUserAllRepos' url (repos : Repo list) = job {
+    log ("Request: " + url) ()
     let! gitHubResponse = 
       httpGetWithPagination url
+    log ("Response: " + url) ()
     let currentPageRepos = 
       gitHubResponse.Body
       |> ReposTypeProvider.Parse
@@ -101,8 +106,10 @@ let parseLanguagesJson languagesJson =
 
 let getUserRepoLanguages username repoName =
   languagesUrl username repoName 
+  |> log ("Request(L): " + username + ", " + repoName)
   |> httpGet
   |> Job.map parseLanguagesJson
+  |> Job.map (log ("Response(L): " + username + ", " + repoName))
 
 type RepoDto = {
   Name : string
