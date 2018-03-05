@@ -8,6 +8,8 @@ NUGET
     Http.fs (5.0.1)
       FSharp.Core (>= 4.1.18)
       Hopac (>= 0.3.23)
+    Suave (2.2.1)
+      FSharp.Core (>= 4.0.0.1)
     System.Net.Http (4.3.3)
       System.Security.Cryptography.X509Certificates (>= 4.3)
     System.Security.Cryptography.Algorithms (4.3.1)

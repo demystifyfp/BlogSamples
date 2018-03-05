@@ -9,10 +9,15 @@ open FSharp.Data
 #r "packages/FSharp.Data/lib/net45/FSharp.Data.dll"
 #r "packages/Http.fs/lib/net461/HttpFs.dll"
 #r "packages/System.Net.Http/lib/net46/System.Net.Http.dll"
+#r "packages/Suave/lib/net40/Suave.dll"
 
 open Hopac
 open FSharp.Data
 open HttpFs.Client
+open Suave
+open Suave.Successful
+open Suave.Filters
+open System.Threading
 
 type UserTypeProvider = JsonProvider<"https://api.github.com/users/tamizhvendan">
 type User = UserTypeProvider.Root
@@ -144,6 +149,8 @@ type UserDto = {
       "avatarUrl", JsonValue.String u.AvatarUrl
       "topThreeRepos", topThreeRepos
     |]
+  static member ToJsonString(u : UserDto) =
+    UserDto.ToJson(u).ToString()
 
 let repoDto (repo : Repo) languages = {
   Name = repo.Name
@@ -171,9 +178,45 @@ let getUserDto username = job {
   }
 }
 
-#time "on"
-getUserDto "haf"
-|> Job.map (UserDto.ToJson)  
-|> Job.map (fun x -> x.ToString())
-|> run
-#time "off"
+
+open Suave.Operators
+
+let getUserApi username ctx = async {
+  let! userDtoResponse =
+    getUserDto username
+    |> Job.catch
+    |> Job.toAsync
+  match userDtoResponse with
+  | Choice1Of2 userDto ->
+    let res =
+      userDto
+      |> UserDto.ToJsonString
+      |> OK
+      >=> Writers.setMimeType "application/json; charset=utf-8"
+    return! res ctx
+  | Choice2Of2 ex ->
+    printfn "%A" ex
+    return! ServerErrors.INTERNAL_ERROR "something went wrong" ctx
+}
+
+let app = pathScan "/api/profile/%s" getUserApi
+
+let startServer () =
+  let cts = new CancellationTokenSource()
+  let listening, server = 
+    startWebServerAsync defaultConfig app
+  Async.Start(server, cts.Token) |> ignore
+  Async.RunSynchronously listening |> ignore
+  cts
+
+let stopServer (cts : CancellationTokenSource) =
+  cts.Cancel true
+  cts.Dispose()
+
+
+// #time "on"
+// getUserDto "haf"
+// |> Job.map (UserDto.ToJson)  
+// |> Job.map (fun x -> x.ToString())
+// |> run
+// #time "off"

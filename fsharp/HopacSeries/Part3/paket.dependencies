@@ -3,4 +3,5 @@ framework: net461
 nuget FSharp.Data
 nuget Hopac
 nuget Http.Fs
+nuget Suave
 nuget System.Net.Http
