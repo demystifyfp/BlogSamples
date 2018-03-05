@@ -1,4 +1,8 @@
 #r "packages/Hopac/lib/net45/Hopac.Core.dll"
+open FSharp.Data
+open FSharp.Data
+open FSharp.Data
+open FSharp.Data
 #r "packages/Hopac/lib/net45/Hopac.Platform.dll"
 #r "packages/Hopac/lib/net45/Hopac.dll"
 #r "packages/Hopac/lib/net45/Hopac.dll"
@@ -111,13 +115,35 @@ type RepoDto = {
   Name : string
   StargazersCount : int
   Languages : string []
-}
+} with
+  static member ToJson(r : RepoDto) = 
+    let languages =
+      r.Languages 
+      |> Array.map (JsonValue.String)
+      |> JsonValue.Array
+    let stars =
+      r.StargazersCount |> decimal |> JsonValue.Number
+    JsonValue.Record [|
+      "name", JsonValue.String r.Name
+      "stars", stars
+      "languages", languages
+    |]
 
 type UserDto = {
   Name : string
   AvatarUrl : string
   TopThreeRepos : RepoDto []
-}
+} with
+  static member ToJson(u : UserDto) =
+    let topThreeRepos =
+      u.TopThreeRepos
+      |> Array.map RepoDto.ToJson
+      |> JsonValue.Array
+    JsonValue.Record [|
+      "name", JsonValue.String u.Name
+      "avatarUrl", JsonValue.String u.AvatarUrl
+      "topThreeRepos", topThreeRepos
+    |]
 
 let repoDto (repo : Repo) languages = {
   Name = repo.Name
@@ -146,5 +172,8 @@ let getUserDto username = job {
 }
 
 #time "on"
-getUserDto "haf" |> run
+getUserDto "haf"
+|> Job.map (UserDto.ToJson)  
+|> Job.map (fun x -> x.ToString())
+|> run
 #time "off"
