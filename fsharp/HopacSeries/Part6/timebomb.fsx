@@ -113,7 +113,7 @@ let simulateExplosion () =
   |> Alt.afterFun (printfn "Status: %A")
   |> run
 
-let simulateDefusal char =
+let simulateDefuse char =
   let seconds = 5
   let t = TimeBomb()
   t.Status |> printfn "Status: %A"
