@@ -42,13 +42,13 @@ type TimeBomb () =
     |> start
 
   let rec inputLoop defuseChar =
-    inCh
-    |> Alt.afterJob (fun c -> 
-      if c = defuseChar then
+    let onInput inChar =
+      if inChar = defuseChar then
         IVar.tryFill reason Defused
       else
         inputLoop defuseChar :> Job<unit>
-    )
+    inCh
+    |> Alt.afterJob onInput
   let activate seconds defuseChar =
     let ticker = startTicker seconds
     startTimeOut seconds
@@ -56,33 +56,35 @@ type TimeBomb () =
     inputLoop defuseChar |> start
     IVar.read reason
     |> Alt.afterFun (fun _ -> ticker.Stop())
+    |> start
 
-  member __.Status () =
-    let deadReasonAlt =
-      IVar.read reason
-      |> Alt.afterFun Dead
+  member __.Status 
+    with get() =
+      let deadReasonAlt =
+        IVar.read reason
+        |> Alt.afterFun Dead
 
-    let activatedAlt =
-      IVar.read activated
-      |> Alt.afterFun (fun _ -> Alive)
-    
-    let notActivatedAlt =
-      Alt.always NotActivated
+      let activatedAlt =
+        IVar.read activated
+        |> Alt.afterFun (fun _ -> Alive)
+      
+      let notActivatedAlt =
+        Alt.always NotActivated
 
-    Alt.choose [
-      deadReasonAlt 
-      activatedAlt
-      notActivatedAlt
-    ] |> run
+      Alt.choose [
+        deadReasonAlt 
+        activatedAlt
+        notActivatedAlt] 
+      |> run
 
   member this.Activate (seconds : int, defuseChar : char) =
-    match this.Status() with
+    match this.Status with
     | NotActivated -> 
-      activate seconds defuseChar |> start
+      activate seconds defuseChar
     | _ -> ()
 
   member this.TryDefuse(defuseChar) =
-    match this.Status() with
+    match this.Status with
     | Alive -> 
       Ch.give inCh defuseChar 
       |> start
@@ -103,10 +105,10 @@ let printSecondsRemaining (t : TimeBomb) =
 let simulateExplosion () =
   let seconds = 5
   let t = TimeBomb()
-  t.Status() |> printfn "Status: %A"
+  t.Status |> printfn "Status: %A"
   t.Activate(seconds, 'a')
   printSecondsRemaining t
-  t.Status() |> printfn "Status: %A"
+  t.Status |> printfn "Status: %A"
   t.DeadStatusAlt
   |> Alt.afterFun (printfn "Status: %A")
   |> run
@@ -114,10 +116,10 @@ let simulateExplosion () =
 let simulateDefusal char =
   let seconds = 5
   let t = TimeBomb()
-  t.Status() |> printfn "Status: %A"
+  t.Status |> printfn "Status: %A"
   t.Activate(seconds, 'a')
   printSecondsRemaining t
-  t.Status() |> printfn "Status: %A"
+  t.Status |> printfn "Status: %A"
   
   TimeSpan.FromSeconds 3.
   |> timeOut 
