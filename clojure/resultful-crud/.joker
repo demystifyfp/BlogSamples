@@ -1,0 +1,7 @@
+{:known-macros [schema.core/defschema
+                compojure.core/defroutes
+                compojure.api.sweet/POST
+                compojure.api.sweet/DELETE
+                compojure.api.sweet/GET
+                compojure.api.sweet/PUT
+                toucan.models/defmodel]}
