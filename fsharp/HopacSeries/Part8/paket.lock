@@ -1,0 +1,7 @@
+RESTRICTION: == net461
+NUGET
+  remote: https://www.nuget.org/api/v2
+    FSharp.Core (4.5)
+    Hopac (0.3.23)
+      FSharp.Core (>= 3.1.2.5)
+    Http.fs (5.3)
