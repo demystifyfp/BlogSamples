@@ -6,11 +6,6 @@
             [resultful-crud.user :refer [user-routes]])
   (:gen-class))
 
-(defn handler [request]
-  {:status 200
-   :headers {"Content-Type" "text/html"}
-   :body "Hello World"})
-
 (def db-spec
   {:dbtype "postgres"
    :dbname "restful-crud"

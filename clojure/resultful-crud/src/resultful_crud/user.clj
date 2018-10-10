@@ -19,13 +19,6 @@
    :password (s/constrained s/Str valid-password?)
    :email (s/constrained s/Str str/email?)})
 
-(defn create-user! [create-user-req]
-  (:id (db/insert! User create-user-req)))
-
-(defn log-and-return [& args]
-  (apply prn args)
-  (last args))
-
 (defn id->created [id]
   (created (str "/users/" id) {:id id}))
 
@@ -35,7 +28,8 @@
 
 (defn create-user-handler [create-user-req]
   (->> (canocialize-user-req create-user-req)
-       create-user!
+       (db/insert! User)
+       :id
        id->created))
 
 (defn delete-user-handler [user-id]
