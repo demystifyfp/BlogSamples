@@ -22,12 +22,12 @@
 (defn id->created [id]
   (created (str "/users/" id) {:id id}))
 
-(defn canocialize-user-req [user-req]
+(defn canonicalize-user-req [user-req]
   (-> (update user-req :password hashers/derive)
       (rename-keys {:password :password_hash})))
 
 (defn create-user-handler [create-user-req]
-  (->> (canocialize-user-req create-user-req)
+  (->> (canonicalize-user-req create-user-req)
        (db/insert! User)
        :id
        id->created))
@@ -42,7 +42,7 @@
        ok))
 
 (defn update-user-handler [id update-user-req]
-  (db/update! User id (canocialize-user-req update-user-req))
+  (db/update! User id (canonicalize-user-req update-user-req))
   (ok))
 
 (def user-routes
