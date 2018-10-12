@@ -4,7 +4,7 @@
             [buddy.hashers :as hashers]
             [clojure.set :refer [rename-keys]]
             [toucan.db :as db]
-            [ring.util.http-response :refer [ok created]]
+            [ring.util.http-response :refer [ok not-found created]]
             [compojure.api.sweet :refer [GET POST PUT DELETE]]
             [resultful-crud.string-util :as str]))
 
@@ -41,6 +41,16 @@
        (map #(dissoc % :password_hash))
        ok))
 
+(defn user->response [user]
+  (if user
+    (ok user)
+    (not-found)))
+
+(defn get-user-handler [user-id]
+  (-> (User user-id)
+      (dissoc :password_hash)
+      user->response))
+
 (defn update-user-handler [id update-user-req]
   (db/update! User id (canonicalize-user-req update-user-req))
   (ok))
@@ -51,6 +61,9 @@
      (create-user-handler create-user-req))
    (GET "/users" []
      (get-users-handler))
+   (GET "/users/:id" []
+     :path-params [id :- s/Int]
+     (get-user-handler id))
    (PUT "/users/:id" []
      :path-params [id :- s/Int]
      :body [update-user-req UserRequestSchema]
