@@ -4,3 +4,9 @@ CREATE TABLE "user" (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash TEXT NOT NULL
 );
+
+CREATE TABLE book (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(100) NOT NULL,
+  year_published INTEGER NOT NULL
+);
