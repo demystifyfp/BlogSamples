@@ -4,6 +4,7 @@
             [buddy.hashers :as hashers]
             [clojure.set :refer [rename-keys]]
             [toucan.db :as db]
+            [resultful-crud.restful :as restful]
             [ring.util.http-response :refer [ok not-found created]]
             [compojure.api.sweet :refer [GET POST PUT DELETE]]
             [resultful-crud.string-util :as str]))
@@ -71,3 +72,10 @@
    (DELETE "/users/:id" []
      :path-params [id :- s/Int]
      (delete-user-handler id))])
+
+(def user-entity-route
+  (restful/resource {:model User
+                     :name "users"
+                     :req-schema UserRequestSchema
+                     :leave #(dissoc % :password_hash)
+                     :enter canonicalize-user-req}))

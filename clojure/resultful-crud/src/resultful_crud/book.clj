@@ -2,6 +2,7 @@
   (:require [schema.core :as s]
             [resultful-crud.models.book :refer [Book]]
             [toucan.db :as db]
+            [resultful-crud.restful :as restful]
             [ring.util.http-response :refer [ok not-found created]]
             [compojure.api.sweet :refer [GET POST PUT DELETE]]
             [resultful-crud.string-util :as str]))
@@ -60,3 +61,8 @@
    (DELETE "/books/:id" []
      :path-params [id :- s/Int]
      (delete-book-handler id))])
+
+(def book-entity-route
+  (restful/resource {:model Book
+                     :name "books"
+                     :req-schema BookRequestSchema}))
