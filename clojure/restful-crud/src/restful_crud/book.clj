@@ -1,11 +1,11 @@
-(ns resultful-crud.book
+(ns restful-crud.book
   (:require [schema.core :as s]
-            [resultful-crud.models.book :refer [Book]]
+            [restful-crud.models.book :refer [Book]]
             [toucan.db :as db]
-            [resultful-crud.restful :as restful]
+            [restful-crud.restful :as restful]
             [ring.util.http-response :refer [ok not-found created]]
             [compojure.api.sweet :refer [GET POST PUT DELETE]]
-            [resultful-crud.string-util :as str]))
+            [restful-crud.string-util :as str]))
 
 (defn valid-book-title? [title]
   (str/non-blank-with-max-length? 100 title))

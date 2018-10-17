@@ -1,4 +1,4 @@
-(defproject resultful-crud "0.1.0-SNAPSHOT"
+(defproject restful-crud "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -16,6 +16,6 @@
 
                  ; Password Hashing
                  [buddy/buddy-hashers "1.3.0"]]
-  :main ^:skip-aot resultful-crud.core
+  :main ^:skip-aot restful-crud.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})

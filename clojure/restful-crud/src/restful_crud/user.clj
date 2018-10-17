@@ -1,13 +1,13 @@
-(ns resultful-crud.user
+(ns restful-crud.user
   (:require [schema.core :as s]
-            [resultful-crud.models.user :refer [User]]
+            [restful-crud.models.user :refer [User]]
             [buddy.hashers :as hashers]
             [clojure.set :refer [rename-keys]]
             [toucan.db :as db]
-            [resultful-crud.restful :as restful]
+            [restful-crud.restful :as restful]
             [ring.util.http-response :refer [ok not-found created]]
             [compojure.api.sweet :refer [GET POST PUT DELETE]]
-            [resultful-crud.string-util :as str]))
+            [restful-crud.string-util :as str]))
 
 (defn valid-username? [name]
   (str/non-blank-with-max-length? 50 name))

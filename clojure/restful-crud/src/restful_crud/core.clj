@@ -1,10 +1,10 @@
-(ns resultful-crud.core
+(ns restful-crud.core
   (:require [ring.adapter.jetty :refer [run-jetty]]
             [toucan.db :as db]
             [toucan.models :as models]
             [compojure.api.sweet :refer [api routes]]
-            [resultful-crud.user :refer [user-entity-route]]
-            [resultful-crud.book :refer [book-entity-route]])
+            [restful-crud.user :refer [user-entity-route]]
+            [restful-crud.book :refer [book-entity-route]])
   (:gen-class))
 
 (def db-spec
@@ -26,5 +26,5 @@
 (defn -main
   [& args]
   (db/set-default-db-connection! db-spec)
-  (models/set-root-namespace! 'resultful-crud.models)
+  (models/set-root-namespace! 'restful-crud.models)
   (run-jetty app {:port 3000}))

@@ -1,11 +1,14 @@
-(ns resultful-crud.restful
+(ns restful-crud.restful
   (:require [compojure.api.sweet :refer [GET POST PUT DELETE routes]]
             [toucan.db :as db]
             [schema.core :as s]
             [ring.util.http-response :refer [ok not-found created]]))
 
-(defn id->created [id]
-  (created (str "/users/" id) {:id id}))
+(defn resource-id-path [name]
+  (str "/" name "/:id"))
+
+(defn id->created [name id]
+  (created (str "/" name "/" id) {:id id}))
 
 (defn create-route [{:keys [name model req-schema enter]}]
   (let [enter-interceptor (or enter identity)
@@ -15,7 +18,7 @@
       (->> (enter-interceptor req-body)
            (db/insert! model)
            :id
-           id->created))))
+           (id->created name)))))
 
 (defn entity->response [entity]
   (if entity
@@ -24,7 +27,7 @@
 
 (defn get-by-id-route [{:keys [name model leave]}]
   (let [leave-interceptor (or leave identity)
-        path (str "/" name "/:id")]
+        path (resource-id-path name)]
     (GET path []
       :path-params [id :- s/Int]
       (-> (model id)
@@ -41,7 +44,7 @@
 
 (defn update-route [{:keys [name model req-schema enter]}]
   (let [enter-interceptor (or enter identity)
-        path (str "/" name "/:id")]
+        path (resource-id-path name)]
     (PUT path http-req
       :path-params [id :- s/Int]
       :body [req-body req-schema]
@@ -49,7 +52,7 @@
       (ok))))
 
 (defn delete-route [{:keys [name model]}]
-  (let [path (str "/" name "/:id")]
+  (let [path (resource-id-path name)]
     (DELETE path []
       :path-params [id :- s/Int]
       (db/delete! model :id id)

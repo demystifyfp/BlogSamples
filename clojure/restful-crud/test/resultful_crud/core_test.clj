@@ -1,6 +1,6 @@
-(ns resultful-crud.core-test
+(ns restful-crud.core-test
   (:require [clojure.test :refer :all]
-            [resultful-crud.core :refer :all]))
+            [restful-crud.core :refer :all]))
 
 (deftest a-test
   (testing "FIXME, I fail."

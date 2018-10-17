@@ -1,4 +1,4 @@
-# resultful-crud
+# restful-crud
 
 FIXME: description
 
@@ -10,7 +10,7 @@ Download from http://example.com/FIXME.
 
 FIXME: explanation
 
-    $ java -jar resultful-crud-0.1.0-standalone.jar [args]
+    $ java -jar restful-crud-0.1.0-standalone.jar [args]
 
 ## Options
 
