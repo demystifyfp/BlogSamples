@@ -3,7 +3,26 @@ module Server
 open Saturn
 open FSharp.Control.Tasks
 open Microsoft.AspNetCore.Http
+open FsConfig
+open System
 
+let private camelCaseCanonicalizer _ (name : string) =
+    name
+    |> String.mapi (fun i c ->
+      if (i = 0) then Char.ToLowerInvariant c else c
+    )
+
+type QueryStringReader(ctx : HttpContext) =
+  interface IConfigReader with
+    member __.GetValue name =
+      printfn "--> %s" name
+      match ctx.Request.Query.TryGetValue name with
+      | true, x -> Some (x.ToString())
+      | _ -> None
+
+let bindQueryString<'T> (ctx : HttpContext) =
+  let reader = new QueryStringReader(ctx)
+  parse<'T> reader camelCaseCanonicalizer ""
 
 type DealsCategory =
 | AllDeals
@@ -30,7 +49,7 @@ type SearchFilter = {
 [<CLIMutable>]
 type Search = {
   Category : DealsCategory
-  Filter : SearchFilter option
+  Filter : SearchFilter
 }
 
 type Book = {
@@ -38,9 +57,7 @@ type Book = {
   Author : string
 }
 let getBooks (ctx : HttpContext) = task {
-  let qs = ctx.Request.Query
-  qs |> Seq.iter (printfn "%A")
-  let search = Controller.getQuery<Search> ctx
+  let search = bindQueryString<Search> ctx
   printfn "%A" search
   let response = [{Title = "B1"; Author = "A1"}]
   return! Controller.json ctx response
