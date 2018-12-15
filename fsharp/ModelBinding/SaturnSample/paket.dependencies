@@ -1,0 +1,10 @@
+source https://api.nuget.org/v3/index.json
+
+nuget FsConfig 2.0.2
+nuget FSharp.Core
+nuget saturn
+
+group Build
+  source https://api.nuget.org/v3/index.json
+
+  nuget FAKE
