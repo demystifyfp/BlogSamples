@@ -1,0 +1,32 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src"]
+
+ :dependencies [[binaryage/devtools "0.9.7"]
+                [reagent "0.8.0-alpha2"]
+                [cider/cider-nrepl "0.18.0"]
+                [cljsjs/vega-lite "3.0.0-rc10-0"]
+                [cljsjs/vega "4.4.0-0"]]
+
+
+ ;; set an nrepl port for connection to a REPL.
+ :nrepl        {:port 8777}
+
+ :builds
+ {:app {:target :browser
+        :output-dir "public/js/compiled"
+        :asset-path "/js/compiled"
+
+        :modules
+        {:main
+         {:entries [petromax-ui.core]}}
+
+        :devtools
+        ;; before live-reloading any code call this function
+        {:before-load petromax-ui.core/stop
+         ;; after live-reloading finishes call this function
+         :after-load petromax-ui.core/start
+         ;; serve the public directory over http at port 8700
+         :http-root    "public"
+         :http-port    8700
+         :preloads     [devtools.preload]}}}}

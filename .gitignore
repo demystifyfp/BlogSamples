@@ -304,3 +304,7 @@ pom.xml.asc
 .lein-failures
 .nrepl-port
 .cpcache/
+compiled
+.shadow-cljs
+symbolCache.db
+.ionide
