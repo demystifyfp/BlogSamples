@@ -1,0 +1,8 @@
+{:app
+ {:database
+  {:adapter            "postgresql"
+   :username           #or [#env "WHEEL_APP_DB_USERNAME" "postgres"]
+   :password           #or [#env "WHEEL_APP_DB_PASSWORD" "postgres"]
+   :database-name      #or [#env "WHEEL_APP_DB_NAME" "my_tasks"]
+   :server-name        #or [#env "WHEEL_APP_DB_SERVER" "localhost"]
+   :port-number        #or [#env "WHEEL_APP_DB_PORT" 5432]}}}
