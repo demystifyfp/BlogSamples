@@ -1,7 +1,12 @@
 (ns wheel.core
+  (:require [wheel.infra.core :as infra])
   (:gen-class))
 
+(defn add-shutdown-hook []
+  (.addShutdownHook (Runtime/getRuntime) (Thread. infra/stop-app)))
+
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
+  (infra/start-app)
+  (add-shutdown-hook)
   (println "Hello, World!"))
