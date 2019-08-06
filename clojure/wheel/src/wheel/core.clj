@@ -7,6 +7,4 @@
 
 (defn -main
   [& args]
-  (infra/start-app)
-  (add-shutdown-hook)
   (println "Hello, World!"))
