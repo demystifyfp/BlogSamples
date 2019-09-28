@@ -1,10 +1,17 @@
 (ns wheel.infra.core
   (:require [mount.core :as mount]
+            [wheel.infra.log :as log]
+            [clojure.spec.alpha :as s]
             [wheel.infra.config :as config]
             [wheel.infra.database :as db]))
 
-(defn start-app []
-  (mount/start))
+(defn start-app 
+  ([]
+   (start-app true))
+  ([check-asserts]
+   (log/init)
+   (s/check-asserts check-asserts)
+   (mount/start)))
 
 (defn stop-app []
   (mount/stop))
