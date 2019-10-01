@@ -16,7 +16,9 @@
        "+05:30")
     false))
 
-(ist? "2007-04-05T12:30-02:00")
-
 (s/def ::iso-8061-format (s/and string? iso-8061-format?))
 (s/def ::ist-timestamp (s/and ::iso-8061-format ist?))
+
+(comment
+  (s/valid? ::ist-timestamp "2007-04-05T12:30-02:00")
+  (s/valid? ::ist-timestamp "2019-10-01T06:56+05:30"))

@@ -7,10 +7,10 @@
 (s/def ::parent-id ::id)
 (s/def ::name qualified-keyword?)
 (s/def ::level #{:info :warn :debug :error :fatal})
-(s/def ::type #{:domain :system})
 (s/def ::timestamp ::offset-date-time/ist-timestamp)
+(s/def ::type #{:domain :system})
 
-(s/def ::channel-id integer?)
+(s/def ::channel-id ::channel/id)
 (s/def ::channel-name ::channel/name)
 
 (defmulti event-type :type)
@@ -18,10 +18,12 @@
   (s/keys :req-un [::id ::name ::type ::level ::timestamp]
           :opt-un [::parent-id]))
 (defmethod event-type :domain [_]
-  (s/keys :req-un [::id ::name ::type ::level ::timestamp ::channel-id ::channel-name]
+  (s/keys :req-un [::id ::name ::type ::level ::timestamp 
+                   ::channel-id ::channel-name]
           :opt-un [::parent-id]))
 (defmethod event-type :default [_]
   (s/keys :req-un [::type]))
+
 (s/def ::event (s/multi-spec event-type :type))
 
 (comment
