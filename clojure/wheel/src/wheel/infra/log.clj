@@ -4,13 +4,13 @@
             [clojure.spec.alpha :as s]
             [wheel.middleware.event :as event]))
 
-(defn- output-fn [{:keys [level msg_ instant]}]
+(defn- json-output [{:keys [level msg_ instant]}]
   (let [event (read-string (force msg_))]
     (json/generate-string {:timestamp instant
                            :level level
                            :event event})))
 (defn init []
-  (timbre/merge-config! {:output-fn output-fn}))
+  (timbre/merge-config! {:output-fn json-output}))
 
 (defn write! [{:keys [level]
                :as event}]
@@ -26,8 +26,8 @@
   (run! write! events))
 
 (comment
-  (timbre/info "hello timbre!")
-  (timbre/info {:hello "timbre!"})
+  (timbre/info "Hello Timbre!")
+  (timbre/info {:Hello "Timbre!"})
   (init)
   (timbre/info {:name :ranging/succeeded})
   (s/check-asserts true)
