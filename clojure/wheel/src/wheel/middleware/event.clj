@@ -26,6 +26,9 @@
 
 (s/def ::event (s/multi-spec event-type :type))
 
+(defn domain? [event]
+  (and (s/valid? ::event event) (= :domain (:type event))))
+
 (comment
   (s/valid?
    ::event
