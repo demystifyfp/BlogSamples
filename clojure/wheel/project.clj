@@ -11,7 +11,8 @@
                  [org.flywaydb/flyway-core "5.2.4"]
                  [com.taoensso/timbre "4.10.0"]
                  [cheshire "5.9.0"]
-                 [toucan "1.14.0"]]
+                 [toucan "1.14.0"]
+                 [clj-http "3.10.0"]]
   :main ^:skip-aot wheel.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
