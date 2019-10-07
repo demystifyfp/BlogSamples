@@ -4,32 +4,33 @@
             [wheel.infra.ibmmq :as ibmmq]
             [mount.core :as mount]
             [wheel.infra.log :as log])
-  (:import (javax.jms MessageListener Message)
-           (javax.jms Session)))
+  (:import [javax.jms MessageListener Message]
+           [javax.jms Session]))
 
-(defn- message-listener [system-event-name error-event-name on-message-handler]
+(defn- on-handler-exception [ex error-event-name oms-event]
+  (if-let [{:keys [channel-id channel-name exception]} (ex-data ex)]
+    (log/write-all!
+     [oms-event
+      (event/new-error-event error-event-name exception (:id oms-event)
+                             channel-id channel-name)])
+    (log/write-all!
+     [oms-event
+      (event/new-error-event error-event-name ex (:id oms-event))])))
+
+(defn- message-listener [oms-event-name error-event-name on-message-handler]
   (proxy [MessageListener] []
     (onMessage [^Message msg]
-      (let [body         (.getBody msg String)
-            parent-event (event/new-system-event system-event-name
-                                                 :info {:message body})
-            parent-id    (:id parent-event)]
+      (let [message   (.getBody msg String)
+            oms-event (event/new-oms-event oms-event-name message)]
         (try
-          (let [events                            (on-message-handler {:message   body
-                                                                       :parent-id parent-id})
-                {:keys [channel-id channel-name]} (first events)]
-            (-> (event/to-domain-event parent-event channel-id channel-name)
-                (cons events)
-                (doto prn)
-                log/write-all!))
+          (->> (on-message-handler (:id oms-event) message)
+               (cons oms-event)
+               log/write-all!)
           (catch Throwable ex
-            (if-let [{:keys [channel-id channel-name exception]} (ex-data ex)]
-              (log/write-all!
-               [(event/to-domain-event parent-event channel-id channel-name)
-                (event/new-domain-error error-event-name exception
-                                        parent-id channel-id channel-name)])
-              (log/write-all!
-               [parent-event (event/new-system-error error-event-name ex parent-id)])))
+            (try
+              (on-handler-exception ex error-event-name oms-event)
+              (catch Throwable e
+                (log/fatal e))))
           (finally (.acknowledge msg)))))))
 
 (defn start-consumer [queue-name jms-session listener]
@@ -46,14 +47,14 @@
   :start (.createSession ibmmq/jms-conn false Session/CLIENT_ACKNOWLEDGE)
   :stop (stop jms-ranging-session))
 
-(defn- generic-msg-handler [{:keys [parent-id message]}]
+(defn- generic-msg-handler [parent-id message]
   (case message
     "1" (throw (Exception. "Something went wrong"))
     "2" (throw (ex-info "Something went wrong in a channel"
                         {:channel-id   "UA"
                          :channel-name :tata-cliq
                          :exception    (Exception. "Something went wrong!")}))
-    [(event/new-domain-event :ranging/succeeded :info parent-id "UA" :tata-cliq)]))
+    [(event/new-domain-event :ranging/succeeded parent-id "UA" :tata-cliq {})]))
 
 (mount/defstate ranging-consumer
   :start (let [queue-name (:queue (config/ranging))

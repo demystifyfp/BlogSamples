@@ -1,7 +1,10 @@
 (ns wheel.infra.ibmmq
-  (:import (com.ibm.msg.client.jms JmsFactoryFactory)
-           (com.ibm.msg.client.wmq WMQConstants))
+  (:import [com.ibm.msg.client.jms JmsFactoryFactory]
+           [com.ibm.msg.client.wmq WMQConstants]
+           [javax.jms ExceptionListener
+            JMSException])
   (:require [wheel.infra.config :as config]
+            [wheel.infra.log :as log]
             [mount.core :as mount]))
 
 (defn- new-jms-conn [{:keys [host port channel qmgr user-id password]}]
@@ -20,7 +23,9 @@
     (.createConnection cf)))
 
 (mount/defstate jms-conn
-  :start (let [conn (new-jms-conn (config/mq))]
-           (.start conn)
-           conn)
+  :start (doto (new-jms-conn (config/mq))
+           (.setExceptionListener (proxy [ExceptionListener] []
+                                    (onException [^JMSException ex]
+                                      (log/fatal ex))))
+           (.start))
   :stop (.close jms-conn))
