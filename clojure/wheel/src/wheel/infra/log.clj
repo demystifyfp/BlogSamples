@@ -13,10 +13,10 @@
 (defn init []
   (timbre/merge-config! {:output-fn json-output
                          :appenders {:database database/appender
-                                     :slack slack/appender}}))
+                                     :slack    slack/appender}}))
 
 (defn write! [{:keys [level]
-               :as event}]
+               :as   event}]
   {:pre [(s/assert ::event/event event)]}
   (case level
     :info (timbre/info event)
@@ -28,20 +28,24 @@
 (defn write-all! [events]
   (run! write! events))
 
+(defn fatal [msg]
+  (timbre/fatal msg))
+
 (comment
   (timbre/info "Hello Timbre!")
   (timbre/info {:Hello "Timbre!"})
   (init)
   (timbre/info {:name :ranging/succeeded})
   (s/check-asserts true)
-  (write! {:level :info :name :foo})
+  (write! {:level :info
+           :name  :foo})
   (s/check-asserts false)
-  (s/assert ::event/event {:level :info :name :foo})
-  (write! {:name :ranging/failed
-           :type :domain
-           :level :error
-           :channel-id "UA"
-           :timestamp "2019-10-04T15:56+05:30"
-           :id (java.util.UUID/randomUUID)
-           :channel-name :tata-cliq})
-  )
+  (s/assert ::event/event {:level :info
+                           :name  :foo})
+  (write! {:name         :ranging/failed
+           :type         :domain
+           :level        :error
+           :channel-id   "UA"
+           :timestamp    "2019-10-04T15:56+05:30"
+           :id           (java.util.UUID/randomUUID)
+           :channel-name :tata-cliq}))

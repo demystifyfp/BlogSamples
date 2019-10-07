@@ -9,9 +9,9 @@
 (models/defmodel Event :event
   models/IModel
   (types [_]
-         {:name :keyword
+         {:name         :keyword
           :channel-name :channel-name
-          :level :event-level}))
+          :level        :event-level}))
 
 (defn- timestamp->offset-date-time [timestamp]
   (OffsetDateTime/parse timestamp DateTimeFormatter/ISO_OFFSET_DATE_TIME))
@@ -21,14 +21,14 @@
          (s/assert event/domain? new-event)]}
   (as-> new-event evt
     (update evt :timestamp timestamp->offset-date-time)
-    (dissoc evt :type)
+    (dissoc evt :type :payload)
     (db/insert! Event evt)))
 
 (comment
- (create! {:name :ranging/succeeded
-           :type :domain
-           :channel-id "UA"
-           :level :info
-           :timestamp "2019-10-01T12:30+05:30"
-           :id (java.util.UUID/randomUUID)
-           :channel-name :tata-cliq}))
+  (create! {:name         :ranging/succeeded
+            :type         :domain
+            :channel-id   "UA"
+            :level        :info
+            :timestamp    "2019-10-01T12:30+05:30"
+            :id           (java.util.UUID/randomUUID)
+            :channel-name :tata-cliq}))
