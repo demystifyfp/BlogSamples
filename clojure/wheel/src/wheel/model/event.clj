@@ -19,7 +19,7 @@
   (OffsetDateTime/parse timestamp DateTimeFormatter/ISO_OFFSET_DATE_TIME))
 
 (defn create! [new-event]
-  {:pre [(s/assert event/domain-or-oms? new-event)]}
+  {:pre [(s/assert ::event/event new-event)]}
   (db/insert! Event
               (update new-event :timestamp timestamp->offset-date-time)))
 

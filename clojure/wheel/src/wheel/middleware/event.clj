@@ -46,9 +46,6 @@
 
 (s/def ::event (s/multi-spec event-type :type))
 
-(defn domain-or-oms? [event]
-  (and (s/valid? ::event event) (#{:domain :oms} (:type event))))
-
 (defn new-oms-event [event-name message]
   {:post [(s/assert ::event %)]}
   {:name      event-name

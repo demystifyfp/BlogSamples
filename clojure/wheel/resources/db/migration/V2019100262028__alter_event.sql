@@ -1,4 +1,4 @@
-CREATE TYPE event_type AS ENUM ('domain', 'oms');
+CREATE TYPE event_type AS ENUM ('domain', 'oms', 'system');
 
 ALTER TABLE event ALTER COLUMN channel_id DROP NOT NULL;
 ALTER TABLE event ALTER COLUMN channel_name DROP NOT NULL;
