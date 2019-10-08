@@ -4,7 +4,6 @@
            [javax.jms ExceptionListener
             JMSException])
   (:require [wheel.infra.config :as config]
-            [wheel.infra.log :as log]
             [mount.core :as mount]))
 
 (defn- new-jms-conn [{:keys [host port channel qmgr user-id password]}]
@@ -23,9 +22,7 @@
     (.createConnection cf)))
 
 (mount/defstate jms-conn
-  :start (doto (new-jms-conn (config/mq))
-           (.setExceptionListener (proxy [ExceptionListener] []
-                                    (onException [^JMSException ex]
-                                      (log/fatal ex))))
-           (.start))
+  :start (let [conn (new-jms-conn (config/mq))]
+           (.start conn)
+           conn)
   :stop (.close jms-conn))

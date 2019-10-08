@@ -20,18 +20,17 @@
 (defn- message-listener [oms-event-name error-event-name on-message-handler]
   (proxy [MessageListener] []
     (onMessage [^Message msg]
-      (let [message   (.getBody msg String)
-            oms-event (event/new-oms-event oms-event-name message)]
-        (try
-          (->> (on-message-handler (:id oms-event) message)
-               (cons oms-event)
-               log/write-all!)
-          (catch Throwable ex
-            (try
-              (on-handler-exception ex error-event-name oms-event)
-              (catch Throwable e
-                (log/fatal e))))
-          (finally (.acknowledge msg)))))))
+      (try
+        (let [message   (.getBody msg String)
+              oms-event (event/new-oms-event oms-event-name message)]
+          (try
+            (->> (on-message-handler (:id oms-event) message)
+                 (cons oms-event)
+                 log/write-all!)
+            (catch Throwable ex
+              (on-handler-exception ex error-event-name oms-event))))
+        (catch Throwable ex
+          (log/fatal ex))))))
 
 (defn start-consumer [queue-name jms-session listener]
   (let [ibmmq-queue-name (str "queue:///" queue-name)
@@ -44,7 +43,7 @@
   (.close stoppable))
 
 (mount/defstate jms-ranging-session
-  :start (.createSession ibmmq/jms-conn false Session/CLIENT_ACKNOWLEDGE)
+  :start (.createSession ibmmq/jms-conn false Session/AUTO_ACKNOWLEDGE)
   :stop (stop jms-ranging-session))
 
 (defn- generic-msg-handler [parent-id message]
@@ -57,7 +56,7 @@
     [(event/new-domain-event :ranging/succeeded parent-id "UA" :tata-cliq {})]))
 
 (mount/defstate ranging-consumer
-  :start (let [queue-name (:queue (config/ranging))
+  :start (let [queue-name (:ranging-queue-name (config/oms-settings))
                listener   (message-listener :oms/items-ranged :ranging/failed generic-msg-handler)]
            (start-consumer queue-name jms-ranging-session listener))
   :stop (stop ranging-consumer))

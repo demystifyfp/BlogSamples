@@ -18,8 +18,8 @@
 (defn mq []
   (get-in root [:app :mq]))
 
-(defn ranging []
-  (get-in root [:setup :oms :ranging]))
+(defn oms-settings []
+  (get-in root [:settings :oms]))
 
 (comment
   (mount/start)
