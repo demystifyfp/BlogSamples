@@ -3,7 +3,8 @@
             [wheel.infra.log :as log]
             [clojure.spec.alpha :as s]
             [wheel.infra.config :as config]
-            [wheel.infra.database :as db]))
+            [wheel.infra.database :as db]
+            [wheel.infra.ibmmq :as ibmmq]))
 
 (defn start-app 
   ([]

@@ -15,6 +15,9 @@
 (defn slack-log-webhook-url []
   (get-in root [:app :log :slack :webhook-url]))
 
+(defn mq []
+  (get-in root [:app :mq]))
+
 (comment
   (mount/start)
   (database)

@@ -12,7 +12,8 @@
                  [com.taoensso/timbre "4.10.0"]
                  [cheshire "5.9.0"]
                  [toucan "1.14.0"]
-                 [clj-http "3.10.0"]]
+                 [clj-http "3.10.0"]
+                 [com.ibm.mq/com.ibm.mq.allclient "9.1.0.0"]]
   :main ^:skip-aot wheel.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}
