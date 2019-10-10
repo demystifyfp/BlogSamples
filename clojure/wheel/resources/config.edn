@@ -1,15 +1,14 @@
-{:app
- {:database
-  {:adapter            "postgresql"
-   :username           #or [#env "WHEEL_APP_DB_USERNAME" "postgres"]
-   :password           #or [#env "WHEEL_APP_DB_PASSWORD" "postgres"]
-   :database-name      #or [#env "WHEEL_APP_DB_NAME" "wheel"]
-   :server-name        #or [#env "WHEEL_APP_DB_SERVER" "localhost"]
-   :port-number        #or [#env "WHEEL_APP_DB_PORT" 5432]}
-  :log {:slack {:webhook-url #env "WHEEL_APP_LOG_SLACK_WEBHOOK_URL"}}
-  :mq {:host     #or [#env "WHEEL_APP_MQ_HOST" "localhost"]
-       :port     #or [#env "WHEEL_APP_MQ_PORT" 1414]
-       :channel  #or [#env "WHEEL_APP_MQ_CHANNEL" "DEV.APP.SVRCONN"]
-       :qmgr     #or [#env "WHEEL_APP_MQ_QMGR" "QM1"]
-       :user-id  #or [#env "WHEEL_APP_MQ_USER_ID" "app"]
-       :password #or [#env "WHEEL_APP_MQ_PASSWORD" "test123"]}}}
+{:app      {:database {:adapter       "postgresql"
+                       :username      #or [#env "WHEEL_APP_DB_USERNAME" "postgres"]
+                       :password      #or [#env "WHEEL_APP_DB_PASSWORD" "postgres"]
+                       :database-name #or [#env "WHEEL_APP_DB_NAME" "wheel"]
+                       :server-name   #or [#env "WHEEL_APP_DB_SERVER" "localhost"]
+                       :port-number   #or [#env "WHEEL_APP_DB_PORT" 5432]}
+            :log      {:slack {:webhook-url #env "WHEEL_APP_LOG_SLACK_WEBHOOK_URL"}}
+            :mq       {:host     #or [#env "WHEEL_APP_MQ_HOST" "localhost"]
+                       :port     #or [#env "WHEEL_APP_MQ_PORT" 1414]
+                       :channel  #or [#env "WHEEL_APP_MQ_CHANNEL" "DEV.APP.SVRCONN"]
+                       :qmgr     #or [#env "WHEEL_APP_MQ_QMGR" "QM1"]
+                       :user-id  #or [#env "WHEEL_APP_MQ_USER_ID" "app"]
+                       :password #or [#env "WHEEL_APP_MQ_PASSWORD" "test123"]}}
+ :settings {:oms {:ranging-queue-name "DEV.QUEUE.1"}}}

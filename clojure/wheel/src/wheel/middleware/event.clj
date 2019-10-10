@@ -8,7 +8,7 @@
 (s/def ::name qualified-keyword?)
 (s/def ::level #{:info :warn :debug :error :fatal})
 (s/def ::timestamp ::offset-date-time/ist-timestamp)
-(s/def ::type #{:domain :system})
+(s/def ::type #{:domain :system :oms})
 
 (s/def ::channel-id ::channel/id)
 (s/def ::channel-name ::channel/name)
@@ -23,6 +23,8 @@
           :opt-un [::parent-id]))
 (defmethod event-type :default [_]
   (s/keys :req-un [::type]))
+(defmethod event-type :oms [_]
+  (s/keys :req-un [::id ::name ::type ::level ::timestamp]))
 
 (s/def ::event (s/multi-spec event-type :type))
 
