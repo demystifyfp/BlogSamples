@@ -2,7 +2,9 @@
   (:require [clojure.spec.alpha :as s]
             [wheel.marketplace.channel :as channel]
             [wheel.offset-date-time :as offset-date-time]
-            [wheel.oms.item :as item]))
+            [wheel.oms.item :as item]
+            [wheel.oms.message :as oms-message])
+  (:import [java.util UUID]))
 
 (s/def ::id uuid?)
 (s/def ::parent-id ::id)
@@ -65,20 +67,20 @@
 (defn domain? [event]
   (and (s/valid? ::event event) (= :domain (:type event))))
 
+(defn parsing-failed [parent-id message-type error-message]
+  {:pre [(s/assert uuid? parent-id)
+         (s/assert ::oms-message/type message-type)
+         (s/assert ::error-message error-message)]
+   :post [(s/assert ::event %)]}
+  {:id (UUID/randomUUID)
+   :timestamp (str (offset-date-time/ist-now))
+   :name :system/parsing-failed
+   :type :system
+   :level :error
+   :parent-id parent-id
+   :payload {:type :system/parsing-failed
+             :error-message error-message}})
+
 (comment
-  (s/valid?
-   ::event
-   {:name :ranging/succeeded
-    :type :domain
-    :channel-id 1
-    :level :info
-    :timestamp "2019-10-01T12:30+05:30"
-    :id (java.util.UUID/randomUUID)
-    :channel-name :tata-cliq})
-  (s/valid?
-   ::event
-   {:name :db.migration/failed
-    :type :system
-    :level :fatal
-    :timestamp "2019-10-01T12:30+05:30"
-    :id (java.util.UUID/randomUUID)}))
+  (s/check-asserts true)
+  (parsing-failed (UUID/randomUUID) :ranging "expected!"))

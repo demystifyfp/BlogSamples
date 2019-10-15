@@ -2,7 +2,8 @@
   (:require [clojure.xml :as xml]
             [clojure.spec.alpha :as s]
             [wheel.oms.item :as oms-item]
-            [wheel.marketplace.channel :as channel])
+            [wheel.marketplace.channel :as channel]
+            [wheel.middleware.core :as middleware])
   (:import [java.io StringBufferInputStream]))
 
 (s/def ::item
@@ -22,7 +23,6 @@
    :id ItemID})
 
 (defn- parse-message [message]
-  {:post [(s/assert ::message %)]}
   (->> (StringBufferInputStream. message)
        xml/parse
        :content
@@ -30,8 +30,17 @@
        (map :attrs)
        (group-by :ChannelID)
        (map (fn [[id xs]]
-              {:channel-id  id
-               :items (map to-channel-item xs)}))))
+              {:channel-id id
+               :items      (map to-channel-item xs)}))))
+
+(defmethod middleware/parse :ranging [{:keys [message]}]
+  (let [parsed-msg (parse-message message)]
+    (if (s/valid? ::message parsed-msg)
+      parsed-msg
+      (throw (ex-info "invalid ranging message"
+                      {:error-message (s/explain-str ::message parsed-msg)})))))
+
+(defmethod middleware/validate-message :ranging [{:keys []}])
 
 (comment
   (s/check-asserts true)
