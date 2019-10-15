@@ -6,4 +6,4 @@
 (s/def ::message (s/and string? (complement clojure.string/blank?)))
 
 (s/def ::oms-message
-       (s/keys :req-un [::type ::id ::messsage]))
+       (s/keys :req-un [::type ::id ::message]))

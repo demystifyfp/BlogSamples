@@ -40,7 +40,8 @@
       (throw (ex-info "invalid ranging message"
                       {:error-message (s/explain-str ::message parsed-msg)})))))
 
-(defmethod middleware/validate-message :ranging [{:keys []}])
+(defmethod middleware/xsd-resource-file-path :ranging [_]
+  "oms/message_schema/ranging.xsd")
 
 (comment
   (s/check-asserts true)
