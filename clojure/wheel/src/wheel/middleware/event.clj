@@ -1,5 +1,6 @@
 (ns wheel.middleware.event
   (:require [clojure.spec.alpha :as s]
+            [clojure.stacktrace :as stacktrace]
             [wheel.marketplace.channel :as channel]
             [wheel.offset-date-time :as offset-date-time]
             [wheel.oms.item :as item]
@@ -12,7 +13,8 @@
 (s/def ::oms-event-name #{:oms/items-ranged})
 (s/def ::domain-event-name #{:ranging/succeeded :ranging/failed})
 (s/def ::system-event-name #{:system/parsing-failed
-                             :system/channel-not-found})
+                             :system/channel-not-found
+                             :system/processing-failed})
 
 (s/def ::name (s/or :oms ::oms-event-name 
                     :domain ::domain-event-name
@@ -43,8 +45,12 @@
 (s/def ::message-type ::oms-message/type)
 (defmethod payload-type :system/parsing-failed [_]
   (s/keys :req-un [::error-message ::message-type]))
+
 (defmethod payload-type :system/channel-not-found [_]
   (s/keys :req-un [::channel-id]))
+
+(defmethod payload-type :system/processing-failed [_]
+  (s/keys :req-un [::error-message ::stacktrace]))
 
 (defmethod payload-type :default [_]
   (s/keys :req-un [::type]))
@@ -71,13 +77,15 @@
                              :or   {level :info
                                     type  :domain}}]
   {:post [(s/assert ::event %)]}
-  {:id        (UUID/randomUUID)
-   :timestamp (str (offset-date-time/ist-now))
-   :name      name
-   :level     level
-   :type      type
-   :parent-id parent-id
-   :payload   (assoc payload :type name)})
+  (let [event {:id        (UUID/randomUUID)
+               :timestamp (str (offset-date-time/ist-now))
+               :name      name
+               :level     level
+               :type      type
+               :payload   (assoc payload :type name)}]
+    (if parent-id
+      (assoc event :parent-id parent-id)
+      event)))
 
 (defn oms [oms-event-name message]
   {:pre [(s/assert ::oms-event-name oms-event-name)
@@ -86,6 +94,17 @@
   (event oms-event-name 
          {:message message}
          :type :oms))
+
+(defn- ex->map [ex]
+  {:error-message    (with-out-str (stacktrace/print-throwable ex))
+   :stacktrace (with-out-str (stacktrace/print-stack-trace ex 3))})
+
+(defn processing-failed [ex]
+  {:post [(s/assert ::event %)]}
+  (event :system/processing-failed
+         (ex->map ex)
+         :type :system
+         :level :error))
 
 (defn parsing-failed [parent-id message-type error-message]
   {:pre [(s/assert uuid? parent-id)
@@ -102,4 +121,5 @@
 (comment
   (s/check-asserts true)
   (oms :oms/items-ranged "hello")
+  (processing-failed (Throwable. "foo"))
   (parsing-failed (UUID/randomUUID) :ranging "expected!"))

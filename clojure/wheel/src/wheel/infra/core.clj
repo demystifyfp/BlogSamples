@@ -4,9 +4,11 @@
             [clojure.spec.alpha :as s]
             [wheel.infra.config :as config]
             [wheel.infra.database :as db]
-            [wheel.infra.ibmmq :as ibmmq]))
+            [wheel.infra.ibmmq :as ibmmq]
+            [wheel.infra.oms :as oms]
+            [wheel.middleware.ranging :as ranging]))
 
-(defn start-app 
+(defn start-app
   ([]
    (start-app true))
   ([check-asserts]

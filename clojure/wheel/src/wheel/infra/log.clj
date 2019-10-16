@@ -26,11 +26,7 @@
     :fatal (timbre/fatal event)))
 
 (defn write-all! [events]
-  (prn "~~>" events)
   (run! write! events))
-
-(defn fatal [ex]
-  (timbre/fatal ex))
 
 (comment
   (timbre/info "Hello Timbre!")

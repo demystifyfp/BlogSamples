@@ -18,17 +18,16 @@
 (defn- message-listener [message-type oms-event-name]
   (proxy [MessageListener] []
     (onMessage [^Message msg]
-      (let [message                     (.getBody msg String)
-            {:keys [id]
-             :as   oms-event} (event/oms oms-event-name message)]
-        (try
-          (->> (middleware/handle {:id      id
+      (try
+        (let [message   (.getBody msg String)
+              oms-event (event/oms oms-event-name message)]
+          (->> (middleware/handle {:id      (:id oms-event)
                                    :message message
                                    :type    message-type})
                (cons oms-event)
-               log/write-all!)
-          (catch Throwable ex
-            (prn ex)))))))
+               log/write-all!))
+        (catch Throwable ex
+          (log/write! (event/processing-failed ex)))))))
 
 (defn- start-consumer [queue-name jms-session listener]
   (let [ibmmq-queue-name (str "queue:///" queue-name)

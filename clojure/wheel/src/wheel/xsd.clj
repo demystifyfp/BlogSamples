@@ -26,6 +26,8 @@
   <EXTNChannelItemList>
     <EXTNChannelItem ChannelID=\"UA\" EAN=\"UA_EAN_1\" 
                      ItemID=\"SKU1\" RangeFlag=\"Y\"/>
+    <EXTNChannelItem ChannelID= \"UA\" EAN= \"UA_EAN_2 \"
+ItemID= \"SKU2\" RangeFlag= \"Y\"/>      
   </EXTNChannelItemList>
   <EXTNChannelItemList>
     <EXTNChannelItem ChannelID=\"UB\" EAN=\"UB_EAN_3\" 

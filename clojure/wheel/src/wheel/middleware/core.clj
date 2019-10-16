@@ -25,10 +25,10 @@
     [(event/parsing-failed id type err)]
     (try
       (let [parsed-oms-message (parse oms-msg)]
-        (str "todo" (vec parsed-oms-message)))
+        (throw (ex-info "todo" {:error-message "todo"})))
       (catch Exception e
         (let [{:keys [error-message]} (ex-data e)]
-          (event/parsing-failed id type error-message))))))
+          [(event/parsing-failed id type error-message)])))))
 
 (comment
   (def ranging-sample
