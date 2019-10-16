@@ -28,9 +28,8 @@
 
 (defmulti payload-type :type)
 
-(s/def ::oms-message string?)
 (defmethod payload-type :oms/items-ranged [_]
-  (s/keys :req-un [::oms-message]))
+  (s/keys :req-un [::oms-message/message]))
 
 (s/def ::item-ids (s/coll-of ::item/id :min-count 1))
 (defmethod payload-type :ranging/succeeded [_] 
@@ -41,8 +40,9 @@
 (defmethod payload-type :ranging/failed [_]
   (s/keys :req-un [::error-message ::stacktrace]))
 
+(s/def ::message-type ::oms-message/type)
 (defmethod payload-type :system/parsing-failed [_]
-  (s/keys :req-un [::error-message]))
+  (s/keys :req-un [::error-message ::message-type]))
 (defmethod payload-type :system/channel-not-found [_]
   (s/keys :req-un [::channel-id]))
 
@@ -52,14 +52,14 @@
 
 (defmulti event-type :type)
 (defmethod event-type :system [_]
-  (s/keys :req-un [::id ::name ::type ::level ::timestamp]
+  (s/keys :req-un [::id ::name ::type ::level ::timestamp ::payload]
           :opt-un [::parent-id]))
 (defmethod event-type :domain [_]
   (s/keys :req-un [::id ::name ::type ::level ::timestamp 
-                   ::channel-id ::channel-name]
+                   ::channel-id ::channel-name ::payload]
           :opt-un [::parent-id]))
 (defmethod event-type :oms [_]
-  (s/keys :req-un [::id ::name ::type ::level ::timestamp]))
+  (s/keys :req-un [::id ::name ::type ::level ::timestamp ::payload]))
 (defmethod event-type :default [_]
   (s/keys :req-un [::type]))
 (s/def ::event (s/multi-spec event-type :type))
@@ -67,20 +67,39 @@
 (defn domain? [event]
   (and (s/valid? ::event event) (= :domain (:type event))))
 
+(defn- event [name payload &{:keys [level type parent-id]
+                             :or   {level :info
+                                    type  :domain}}]
+  {:post [(s/assert ::event %)]}
+  {:id        (UUID/randomUUID)
+   :timestamp (str (offset-date-time/ist-now))
+   :name      name
+   :level     level
+   :type      type
+   :parent-id parent-id
+   :payload   (assoc payload :type name)})
+
+(defn oms [oms-event-name message]
+  {:pre [(s/assert ::oms-event-name oms-event-name)
+         (s/assert ::oms-message/message message)]
+   :post [(s/assert ::event %)]}
+  (event oms-event-name 
+         {:message message}
+         :type :oms))
+
 (defn parsing-failed [parent-id message-type error-message]
   {:pre [(s/assert uuid? parent-id)
          (s/assert ::oms-message/type message-type)
          (s/assert ::error-message error-message)]
    :post [(s/assert ::event %)]}
-  {:id (UUID/randomUUID)
-   :timestamp (str (offset-date-time/ist-now))
-   :name :system/parsing-failed
-   :type :system
-   :level :error
-   :parent-id parent-id
-   :payload {:type :system/parsing-failed
-             :error-message error-message}})
+  (event :system/parsing-failed 
+         {:error-message error-message
+          :message-type message-type}
+         :parent-id parent-id
+         :type :system
+         :level :error))
 
 (comment
   (s/check-asserts true)
+  (oms :oms/items-ranged "hello")
   (parsing-failed (UUID/randomUUID) :ranging "expected!"))
