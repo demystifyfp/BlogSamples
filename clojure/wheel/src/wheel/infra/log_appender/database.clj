@@ -3,10 +3,9 @@
 
 (defn- append-to-db [{:keys [msg_]}]
   (let [evnt (read-string (force msg_))]
-    (when (= :domain (:type evnt))
-      (event/create! evnt))))
+    (event/create! evnt)))
 
-(def appender {:enabled? true
+(def appender {:enabled?  true
                :output-fn :inherit
-               :async? true
-               :fn append-to-db})
+               :async?    true
+               :fn        append-to-db})

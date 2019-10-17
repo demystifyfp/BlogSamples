@@ -3,6 +3,7 @@
             [mount.core :as mount]
             [hikari-cp.core :as hikari]
             [toucan.db :as db]
+            [cheshire.core :as json]
             [toucan.models :as models])
   (:import [org.flywaydb.core Flyway]
            [org.postgresql.util PGobject]))
@@ -25,7 +26,12 @@
   (fn [value]
     (doto (PGobject.)
       (.setType pg-enum-type)
-      (.setValue (name value)))))
+      (.setValue (if value (name value) value)))))
+
+(defn- to-pg-jsonb [value]
+  (doto (PGobject.)
+    (.setType "jsonb")
+    (.setValue (json/generate-string value))))
 
 (defn- configure-toucan []
   (db/set-default-db-connection! {:datasource datasource})
@@ -36,7 +42,13 @@
                     :out keyword)
   (models/add-type! :channel-name
                     :in (pg-object-fn "channel_name")
-                    :out keyword))
+                    :out keyword)
+  (models/add-type! :event-type
+                    :in (pg-object-fn "event_type")
+                    :out keyword)
+  (models/add-type! :jsonb
+                    :in to-pg-jsonb
+                    :out #(json/parse-string (.getValue %) true)))
 
 (mount/defstate toucan
   :start (configure-toucan))
