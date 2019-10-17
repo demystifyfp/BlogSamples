@@ -39,6 +39,9 @@
 (defmethod middleware/spec :ranging [_]
   ::message)
 
+(defmethod middleware/process :ranging [_ ranging-message]
+  (throw (Exception. "todo")))
+
 (comment
   (s/check-asserts true)
   (let [msg "

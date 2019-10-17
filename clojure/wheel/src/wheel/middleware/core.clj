@@ -1,8 +1,6 @@
 (ns wheel.middleware.core
   (:require [clojure.spec.alpha :as s]
             [clojure.java.io :as io]
-            [wheel.marketplace.channel :as channel]
-            [wheel.infra.config :as config]
             [wheel.middleware.event :as event]
             [wheel.oms.message :as oms-message]
             [wheel.xsd :as xsd]))
@@ -10,6 +8,8 @@
 (defmulti xsd-resource-file-path :type)
 (defmulti parse :type)
 (defmulti spec :type)
+(defmulti process (fn [type _]
+                    type))
 
 (defn- validate-message [oms-msg]
   (-> (xsd-resource-file-path oms-msg)
@@ -25,7 +25,7 @@
     [(event/parsing-failed id type err)]
     (let [parsed-oms-message (parse oms-msg)]
       (if (s/valid? (spec oms-msg) parsed-oms-message)
-        (throw (Exception. "todo"))
+        (process type parsed-oms-message)
         [(event/parsing-failed
           id type
           (s/explain-str (spec oms-msg) parsed-oms-message))]))))
