@@ -6,7 +6,8 @@
             [wheel.infra.database :as db]
             [wheel.infra.ibmmq :as ibmmq]
             [wheel.infra.oms :as oms]
-            [wheel.middleware.ranging :as ranging]))
+            [wheel.middleware.ranging :as ranging]
+            [wheel.marketplace.tata-cliq.core :as tata-cliq]))
 
 (defn start-app
   ([]

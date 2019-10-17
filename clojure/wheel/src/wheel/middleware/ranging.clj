@@ -2,6 +2,8 @@
   (:require [clojure.xml :as xml]
             [clojure.spec.alpha :as s]
             [wheel.oms.item :as oms-item]
+            [wheel.middleware.event :as event]
+            [wheel.infra.config :as config]
             [wheel.marketplace.channel :as channel]
             [wheel.middleware.core :as middleware])
   (:import [java.io StringBufferInputStream]))
@@ -18,7 +20,7 @@
 (s/def ::message
   (s/coll-of ::channel-items :min-count 1))
 
-(defn- to-channel-item [{:keys [EAN ItemID]}]
+(defn- to-item [{:keys [EAN ItemID]}]
   {:ean EAN
    :id ItemID})
 
@@ -31,7 +33,7 @@
     (group-by :ChannelID)
     (map (fn [[id xs]]
            {:channel-id id
-            :items      (map to-channel-item xs)}))))
+            :items      (map to-item xs)}))))
 
 (defmethod middleware/xsd-resource-file-path :ranging [_]
   "oms/message_schema/ranging.xsd")
@@ -39,8 +41,19 @@
 (defmethod middleware/spec :ranging [_]
   ::message)
 
-(defmethod middleware/process :ranging [_ ranging-message]
-  (throw (Exception. "todo")))
+(defmulti process-ranging (fn [{:keys [channel-name]} oms-msg ranging-message]
+                            channel-name))
+
+(defmethod middleware/process :ranging [{:keys [id]
+                                         :as oms-msg} ranging-message]
+  (for [{:keys [channel-id]
+         :as   ch-ranging-message} ranging-message]
+    (if-let [channel-config (config/get-channel-cofig channel-id)]
+      (try
+        (process-ranging channel-config oms-msg ch-ranging-message)
+        (catch Throwable ex
+          (event/processing-failed ex id :ranging channel-id (:channel-name channel-config))))
+      (event/channel-not-found id :ranging channel-id))))
 
 (comment
   (s/check-asserts true)

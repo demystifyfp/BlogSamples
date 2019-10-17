@@ -11,7 +11,7 @@
 (s/def ::parent-id ::id)
 
 (s/def ::oms-event-name #{:oms/items-ranged})
-(s/def ::domain-event-name #{:ranging/succeeded :ranging/failed})
+(s/def ::domain-event-name #{:ranging/succeeded})
 (s/def ::system-event-name #{:system/parsing-failed
                              :system/channel-not-found
                              :system/processing-failed})
@@ -39,18 +39,23 @@
 
 (s/def ::error-message (s/and string? (complement clojure.string/blank?)))
 (s/def ::stacktrace (s/and string? (complement clojure.string/blank?)))
-(defmethod payload-type :ranging/failed [_]
-  (s/keys :req-un [::error-message ::stacktrace]))
 
 (s/def ::message-type ::oms-message/type)
 (defmethod payload-type :system/parsing-failed [_]
   (s/keys :req-un [::error-message ::message-type]))
 
 (defmethod payload-type :system/channel-not-found [_]
-  (s/keys :req-un [::channel-id]))
+  (s/keys :req-un [::channel-id ::message-type]))
 
 (defmethod payload-type :system/processing-failed [_]
-  (s/keys :req-un [::error-message ::stacktrace]))
+  (s/keys :req-un [::error-message ::stacktrace]
+          :opt-un [::message-type]))
+
+(s/def ::ranged-item
+  (s/keys :req-un [::item/ean ::item/id]))
+(s/def ::ranged-items (s/coll-of ::ranged-item :min-count 1))
+(defmethod payload-type :ranging/succeeded [_]
+  (s/keys :req-un [::ranged-items]))
 
 (defmethod payload-type :default [_]
   (s/keys :req-un [::type]))
@@ -73,7 +78,8 @@
 (defn domain? [event]
   (and (s/valid? ::event event) (= :domain (:type event))))
 
-(defn- event [name payload &{:keys [level type parent-id]
+(defn- event [name payload &{:keys [level type parent-id
+                                    channel-id channel-name]
                              :or   {level :info
                                     type  :domain}}]
   {:post [(s/assert ::event %)]}
@@ -83,9 +89,10 @@
                :level     level
                :type      type
                :payload   (assoc payload :type name)}]
-    (if parent-id
-      (assoc event :parent-id parent-id)
-      event)))
+    (cond-> event
+     parent-id (assoc :parent-id parent-id)
+     channel-id (assoc :channel-id channel-id)
+     channel-name (assoc :channel-name channel-name))))
 
 (defn oms [oms-event-name message]
   {:pre [(s/assert ::oms-event-name oms-event-name)
@@ -99,12 +106,21 @@
   {:error-message    (with-out-str (stacktrace/print-throwable ex))
    :stacktrace (with-out-str (stacktrace/print-stack-trace ex 3))})
 
-(defn processing-failed [ex]
-  {:post [(s/assert ::event %)]}
-  (event :system/processing-failed
-         (ex->map ex)
-         :type :system
-         :level :error))
+(defn processing-failed 
+  ([ex]
+   {:post [(s/assert ::event %)]}
+   (event :system/processing-failed
+          (ex->map ex)
+          :type :system
+          :level :error))
+  ([ex parent-id message-type channel-id channel-name]
+   {:post [(s/assert ::event %)]}
+   (event :system/processing-failed
+          (assoc (ex->map ex) :message-type message-type)
+          :parent-id parent-id
+          :channel-id channel-id
+          :channel-name channel-name
+          :level :error)))
 
 (defn parsing-failed [parent-id message-type error-message]
   {:pre [(s/assert uuid? parent-id)
@@ -117,6 +133,31 @@
          :parent-id parent-id
          :type :system
          :level :error))
+
+(defn channel-not-found [parent-id message-type channel-id]
+  {:pre [(s/assert uuid? parent-id)
+         (s/assert ::oms-message/type message-type)
+         (s/assert ::channel/id channel-id)]
+   :post [(s/assert ::event %)]}
+  (event :system/channel-not-found
+         {:channel-id channel-id
+          :message-type message-type}
+         :parent-id parent-id
+         :type :system
+         :level :error))
+
+(defn ranging-succeeded [parent-id channel-id channel-name items]
+  {:pre [(s/assert uuid? parent-id)
+         (s/assert ::channel/id channel-id)
+         (s/assert ::channel/name channel-name)
+         (s/assert ::ranged-items items)]
+   :post [(s/assert ::event %)]}
+  (event :ranging/succeeded
+         {:ranged-items items}
+         :parent-id parent-id
+         :channel-id channel-id
+         :channel-name channel-name))
+
 
 (comment
   (s/check-asserts true)

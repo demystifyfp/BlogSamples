@@ -8,8 +8,8 @@
 (defmulti xsd-resource-file-path :type)
 (defmulti parse :type)
 (defmulti spec :type)
-(defmulti process (fn [type _]
-                    type))
+(defmulti process (fn [oms-msg parsed-oms-message]
+                    (:type oms-msg)))
 
 (defn- validate-message [oms-msg]
   (-> (xsd-resource-file-path oms-msg)
@@ -25,7 +25,7 @@
     [(event/parsing-failed id type err)]
     (let [parsed-oms-message (parse oms-msg)]
       (if (s/valid? (spec oms-msg) parsed-oms-message)
-        (process type parsed-oms-message)
+        (process oms-msg parsed-oms-message)
         [(event/parsing-failed
           id type
           (s/explain-str (spec oms-msg) parsed-oms-message))]))))

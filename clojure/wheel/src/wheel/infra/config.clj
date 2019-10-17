@@ -21,7 +21,10 @@
 (defn oms-settings []
   (get-in root [:settings :oms]))
 
+(defn get-channel-cofig [channel-id]
+  (get-in root [:settings :channels channel-id]))
+
 (comment
   (mount/start)
-  (database)
+  (get-channel-cofig "UA")
   (mount/stop))
