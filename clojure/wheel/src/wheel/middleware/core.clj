@@ -19,13 +19,13 @@
 
 (defn handle [{:keys [id type]
                :as   oms-msg}]
-  {:pre [(s/assert ::oms-message/oms-message oms-msg)]}
-
+  {:pre  [(s/assert ::oms-message/oms-message oms-msg)]
+   :post [(s/assert (s/coll-of ::event/event :min-count 1) %)]}
   (if-let [err (validate-message oms-msg)]
     [(event/parsing-failed id type err)]
     (let [parsed-oms-message (parse oms-msg)]
       (if (s/valid? (spec oms-msg) parsed-oms-message)
-        (throw (ex-info "todo" {:error-message "todo"}))
+        (throw (Exception. "todo"))
         [(event/parsing-failed
           id type
           (s/explain-str (spec oms-msg) parsed-oms-message))]))))
