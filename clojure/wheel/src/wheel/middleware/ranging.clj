@@ -22,26 +22,22 @@
   {:ean EAN
    :id ItemID})
 
-(defn- parse-message [message]
-  (->> (StringBufferInputStream. message)
-       xml/parse
-       :content
-       (mapcat :content)
-       (map :attrs)
-       (group-by :ChannelID)
-       (map (fn [[id xs]]
-              {:channel-id id
-               :items      (map to-channel-item xs)}))))
-
 (defmethod middleware/parse :ranging [{:keys [message]}]
-  (let [parsed-msg (parse-message message)]
-    (if (s/valid? ::message parsed-msg)
-      parsed-msg
-      (throw (ex-info "invalid ranging message"
-                      {:error-message (s/explain-str ::message parsed-msg)})))))
+  (->> (StringBufferInputStream. message)
+    xml/parse
+    :content
+    (mapcat :content)
+    (map :attrs)
+    (group-by :ChannelID)
+    (map (fn [[id xs]]
+           {:channel-id id
+            :items      (map to-channel-item xs)}))))
 
 (defmethod middleware/xsd-resource-file-path :ranging [_]
   "oms/message_schema/ranging.xsd")
+
+(defmethod middleware/spec :ranging [_]
+  ::message)
 
 (comment
   (s/check-asserts true)

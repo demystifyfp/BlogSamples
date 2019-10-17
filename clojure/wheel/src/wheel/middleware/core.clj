@@ -8,6 +8,8 @@
             [wheel.xsd :as xsd]))
 
 (defmulti xsd-resource-file-path :type)
+(defmulti parse :type)
+(defmulti spec :type)
 
 (defn- validate-message [oms-msg]
   (-> (xsd-resource-file-path oms-msg)
@@ -15,20 +17,18 @@
       io/as-file
       (xsd/validate (:message oms-msg))))
 
-(defmulti parse :type)
-
 (defn handle [{:keys [id type]
                :as   oms-msg}]
   {:pre [(s/assert ::oms-message/oms-message oms-msg)]}
 
   (if-let [err (validate-message oms-msg)]
     [(event/parsing-failed id type err)]
-    (try
-      (let [parsed-oms-message (parse oms-msg)]
-        (throw (ex-info "todo" {:error-message "todo"})))
-      (catch Exception e
-        (let [{:keys [error-message]} (ex-data e)]
-          [(event/parsing-failed id type error-message)])))))
+    (let [parsed-oms-message (parse oms-msg)]
+      (if (s/valid? (spec oms-msg) parsed-oms-message)
+        (throw (ex-info "todo" {:error-message "todo"}))
+        [(event/parsing-failed
+          id type
+          (s/explain-str (spec oms-msg) parsed-oms-message))]))))
 
 (comment
   (def ranging-sample
