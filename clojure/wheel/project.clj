@@ -14,7 +14,8 @@
                  [toucan "1.14.0"]
                  [clj-http "3.10.0"]
                  [com.ibm.mq/com.ibm.mq.allclient "9.1.0.0"]
-                 [clojurewerkz/quartzite "2.1.0"]]
+                 [clojurewerkz/quartzite "2.1.0"]
+                 [funcool/cuerdas "2.0.5"]]
   :main ^:skip-aot wheel.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}

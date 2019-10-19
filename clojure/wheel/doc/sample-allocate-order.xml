@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Order OrderNo="181219-001-345786">
+  <PersonInfoBillTo City="Chennai" FirstName="Tamizhvendan" LastName="Sembiyan" State="TamilNadu" ZipCode="600001">
+    <Extn IRLAddressLine1="Plot No 222" IRLAddressLine2="Ashok Nagar 42nd Street" />
+  </PersonInfoBillTo>
+  <PersonInfoShipTo City="Chennai" FirstName="Tamizhvendan" LastName="Sembiyan" State="TamilNadu" ZipCode="600001">
+    <Extn IRLAddressLine1="Plot No 222" IRLAddressLine2="Ashok Nagar 42nd Street" />
+  </PersonInfoShipTo>
+  <PaymentDetailsList>
+    <PaymentDetails ProcessedAmount="900.0" Reference1="000000-1545216772601"/>
+  </PaymentDetailsList>
+  <OrderLines>
+    <OrderLine>
+      <Item ItemID="200374"/>
+      <LinePriceInfo LineTotal="900.0"/>
+    </OrderLine>
+  </OrderLines>
+</Order>

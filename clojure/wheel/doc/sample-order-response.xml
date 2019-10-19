@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Orders>
+  <Order>
+    <OrderNo>181219-001-345786</OrderNo>
+    <AddressInfo>
+      <Shipping>
+        <FirstName>Tamizhvendan</FirstName>
+        <LastName>Sembiyan</LastName>
+        <Address1>Plot No 222</Address1>
+        <Address2>Ashok Nagar 42nd Street</Address2>
+        <City>Chennai</City>
+        <State>TamilNadu</State>
+        <Pincode>600001</Pincode>
+      </Shipping>
+      <Billing>
+        <FirstName>Tamizhvendan</FirstName>
+        <LastName>Sembiyan</LastName>
+        <Address1>Plot No 222</Address1>
+        <Address2>Ashok Nagar 42nd Street</Address2>
+        <City>Chennai</City>
+        <State>TamilNadu</State>
+        <Pincode>600001</Pincode>
+      </Billing>
+    </AddressInfo>
+    <PaymentInfo>
+      <PaymentCost>900.0</PaymentCost>
+      <PaymentId>000000-1545216772601</PaymentId>
+    </PaymentInfo>
+    <OrderLines>
+      <OrderLine>
+        <TransactionId>200058001702351</TransactionId>
+        <ArticleNumber>200374</ArticleNumber>
+        <Price>900.0</Price>
+      </OrderLine>
+    </OrderLines>
+  </Order>
+</Orders>
