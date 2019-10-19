@@ -9,7 +9,7 @@
 (defmulti jobtype :type)
 
 (defn- identifier [{:keys [channel-id type]}]
-  (keyword channel-id (name type)))
+  (str channel-id "/" (name type)))
 
 (defn- create-job [channel-config cron-job-config]
   (qj/build
@@ -22,22 +22,20 @@
                         :as   cron-job-config}]
   (qt/build
    (qt/with-identity (qt/key (identifier cron-job-config)))
-   (qt/start-now)
    (qt/with-schedule (qsc/schedule
                       (qsc/cron-schedule expression)))))
 
-(defn create [{:keys [channel-id]
-               :as   cron-job-config}]
-  (when-let [channel-config (config/get-channel-config channel-id)]
-    (create-job channel-config cron-job-config)))
-
 (defn handle [channel-fn ctx]
-  (channel-fn (qc/from-job-data ctx) nil))
+  (let [{:strs [channel-config cron-job-config]} (qc/from-job-data ctx)]
+    (channel-fn (:channel-id cron-job-config) channel-config)))
 
-(defn schedule [scheduler cron-job-config]
-  (when-let [job (create cron-job-config)]
-    (qs/schedule scheduler job (create-trigger cron-job-config))))
+(defn schedule [scheduler {:keys [channel-id]
+                           :as   cron-job-config}]
+  (when-let [channel-config (config/get-channel-config channel-id)]
+    (let [job     (create-job channel-config cron-job-config)
+          trigger (create-trigger cron-job-config)]
+      (qs/schedule scheduler job trigger))))
 
 (comment
-  (key {:channel-id "UA"
-        :type       :allocate-order}))
+  (identifier {:channel-id "UA"
+               :type       :allocate-order}))

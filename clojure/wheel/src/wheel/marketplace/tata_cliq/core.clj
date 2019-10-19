@@ -23,5 +23,5 @@
     (catch Throwable ex
       (event/processing-failed ex id :ranging channel-id channel-name))))
 
-(defmethod channel/allocate-order :tata-cliq [x _]
-  (prn "~~>" x))
+(defmethod channel/allocate-order :tata-cliq [channel-id channel-config]
+  (prn channel-id "~~>" channel-config))

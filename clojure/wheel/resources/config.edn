@@ -20,4 +20,4 @@
                               :bearer-token "top-secret!"}}
             :cron-jobs [{:type       :allocate-order
                          :channel-id "UA"
-                         :expression "4 0 * ? * * *"}]}}
+                         :expression "0 0/1 * 1/1 * ? *"}]}}
