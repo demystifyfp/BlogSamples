@@ -21,10 +21,12 @@
 (defn oms-settings []
   (get-in root [:settings :oms]))
 
-(defn get-channel-cofig [channel-id]
+(defn get-channel-config [channel-id]
   (get-in root [:settings :channels channel-id]))
+
+(defn get-all-cron-jobs []
+  (get-in root [:settings :cron-jobs]))
 
 (comment
   (mount/start)
-  (get-channel-cofig "UA")
   (mount/stop))

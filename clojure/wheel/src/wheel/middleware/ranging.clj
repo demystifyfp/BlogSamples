@@ -48,7 +48,7 @@
                                          :as oms-msg} ranging-message]
   (for [{:keys [channel-id]
          :as   ch-ranging-message} ranging-message]
-    (if-let [channel-config (config/get-channel-cofig channel-id)]
+    (if-let [channel-config (config/get-channel-config channel-id)]
       (try
         (process-ranging channel-config oms-msg ch-ranging-message)
         (catch Throwable ex

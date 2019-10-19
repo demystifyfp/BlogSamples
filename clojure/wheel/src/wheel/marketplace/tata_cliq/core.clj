@@ -1,5 +1,6 @@
 (ns wheel.marketplace.tata-cliq.core
   (:require [wheel.marketplace.tata-cliq.api :as tata-cliq]
+            [wheel.marketplace.channel :as channel]
             [wheel.middleware.ranging :as ranging]
             [wheel.oms.message :as oms-message]
             [wheel.middleware.event :as event]
@@ -21,3 +22,6 @@
     (event/ranging-succeeded id channel-id channel-name items)
     (catch Throwable ex
       (event/processing-failed ex id :ranging channel-id channel-name))))
+
+(defmethod channel/allocate-order :tata-cliq [x _]
+  (prn "~~>" x))

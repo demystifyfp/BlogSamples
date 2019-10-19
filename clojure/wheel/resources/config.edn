@@ -11,10 +11,13 @@
                        :qmgr     #or [#env "WHEEL_APP_MQ_QMGR" "QM1"]
                        :user-id  #or [#env "WHEEL_APP_MQ_USER_ID" "app"]
                        :password #or [#env "WHEEL_APP_MQ_PASSWORD" "test123"]}}
- :settings {:oms      {:ranging-queue-name "DEV.QUEUE.1"}
-            :channels {"UA" {:channel-name :tata-cliq
-                             :base-url     "http://localhost:3000"
-                             :bearer-token "top-secret!"}
-                       "UB" {:channel-name :tata-cliq
-                             :base-url     "http://localhost:3000"
-                             :bearer-token "top-secret!"}}}}
+ :settings {:oms       {:ranging-queue-name "DEV.QUEUE.1"}
+            :channels  {"UA" {:channel-name :tata-cliq
+                              :base-url     "http://localhost:3000"
+                              :bearer-token "top-secret!"}
+                        "UB" {:channel-name :tata-cliq
+                              :base-url     "http://localhost:3000"
+                              :bearer-token "top-secret!"}}
+            :cron-jobs [{:type       :allocate-order
+                         :channel-id "UA"
+                         :expression "4 0 * ? * * *"}]}}

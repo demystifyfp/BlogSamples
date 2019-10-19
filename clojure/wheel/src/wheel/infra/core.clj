@@ -4,6 +4,7 @@
             [clojure.spec.alpha :as s]
             [wheel.infra.config :as config]
             [wheel.infra.database :as db]
+            [wheel.infra.cron.core :as cron]
             [wheel.infra.ibmmq :as ibmmq]
             [wheel.infra.oms :as oms]
             [wheel.middleware.ranging :as ranging]
@@ -15,7 +16,8 @@
   ([check-asserts]
    (log/init)
    (s/check-asserts check-asserts)
-   (mount/start)))
+   (mount/start)
+   (cron/init)))
 
 (defn stop-app []
   (mount/stop))

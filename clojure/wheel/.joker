@@ -1,2 +1,3 @@
 {:known-macros [mount.core/defstate
-                toucan.models/defmodel]}
+                toucan.models/defmodel
+                clojurewerkz.quartzite.jobs/defjob]}
