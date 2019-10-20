@@ -4,7 +4,9 @@
             [clojurewerkz.quartzite.scheduler :as qs]
             [clojurewerkz.quartzite.schedule.cron :as qsc]
             [clojurewerkz.quartzite.triggers :as qt]
-            [wheel.infra.config :as config]))
+            [wheel.infra.config :as config]
+            [wheel.middleware.event :as event]
+            [wheel.infra.log :as log]))
 
 (defmulti jobtype :type)
 
@@ -26,11 +28,19 @@
                       (qsc/cron-schedule expression)))))
 
 (defn handle [channel-fn ctx]
-  (let [{:strs [channel-config cron-job-config]} (qc/from-job-data ctx)]
-    (try
-      (channel-fn (:channel-id cron-job-config) channel-config)
-      (catch Throwable ex
-        (prn "==>" ex)))))
+  (try
+    (let [{:strs [channel-config cron-job-config]} (qc/from-job-data ctx)
+          {:keys [channel-id type]}                cron-job-config
+          {:keys [channel-name]}                   channel-config
+          cron-started-event                       (event/cron type channel-id channel-name)]
+      (try
+        (channel-fn channel-id channel-config)
+        (log/write! cron-started-event)
+        (catch Throwable ex
+          (log/write-all! [cron-started-event
+                           (event/cron type channel-id channel-name ex)]))))
+    (catch Throwable t
+      (prn "~~>" t))))
 
 (defn schedule [scheduler {:keys [channel-id]
                            :as   cron-job-config}]

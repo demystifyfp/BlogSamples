@@ -14,7 +14,11 @@
 (s/def ::domain-event-name #{:ranging/succeeded})
 (s/def ::system-event-name #{:system/parsing-failed
                              :system/channel-not-found
-                             :system/processing-failed})
+                             :system/processing-failed
+                             :system.cron/started
+                             :system.cron/failed})
+
+(s/def ::job-type #{:allocate-order})
 
 (s/def ::name (s/or :oms ::oms-event-name 
                     :domain ::domain-event-name
@@ -57,6 +61,12 @@
 (defmethod payload-type :ranging/succeeded [_]
   (s/keys :req-un [::ranged-items]))
 
+(defmethod payload-type :system.cron/started [_]
+  (s/keys :req-un [::job-type]))
+
+(defmethod payload-type :system.cron/failed [_]
+  (s/keys :req-un [::job-type ::error-message ::stacktrace]))
+
 (defmethod payload-type :default [_]
   (s/keys :req-un [::type]))
 (s/def ::payload (s/multi-spec payload-type :type))
@@ -64,7 +74,7 @@
 (defmulti event-type :type)
 (defmethod event-type :system [_]
   (s/keys :req-un [::id ::name ::type ::level ::timestamp ::payload]
-          :opt-un [::parent-id]))
+          :opt-un [::parent-id ::channel-id ::channel-name]))
 (defmethod event-type :domain [_]
   (s/keys :req-un [::id ::name ::type ::level ::timestamp 
                    ::channel-id ::channel-name ::payload]
@@ -120,6 +130,21 @@
           :parent-id parent-id
           :channel-id channel-id
           :channel-name channel-name
+          :level :error)))
+
+(defn cron 
+  ([job-type channel-id channel-name]
+   (event :system.cron/started {:job-type job-type}
+          :channel-id channel-id
+          :channel-name channel-name
+          :type :system
+          :level :info))
+  ([job-type channel-id channel-name ex]
+   (event :system.cron/failed
+          (assoc (ex->map ex) :job-type job-type)
+          :channel-id channel-id
+          :channel-name channel-name
+          :type :system
           :level :error)))
 
 (defn parsing-failed [parent-id message-type error-message]

@@ -26,9 +26,6 @@
       (event/processing-failed ex id :ranging channel-id channel-name))))
 
 (defmethod channel/allocate-order :tata-cliq [channel-id channel-config]
-  (try
-    (->> (tata-cliq/new-orders channel-config channel-id)
-         (map tata-cliq-order/to-oms-order)
-         (run! oms/allocate-order))
-    (catch Throwable e
-      (prn e))))
+  (->> (tata-cliq/new-orders channel-config channel-id)
+       (map tata-cliq-order/to-oms-order)
+       (run! oms/allocate-order)))
