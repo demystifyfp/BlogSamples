@@ -1,5 +1,7 @@
 (ns wheel.marketplace.tata-cliq.core
   (:require [wheel.marketplace.tata-cliq.api :as tata-cliq]
+            [wheel.marketplace.tata-cliq.order :as tata-cliq-order]
+            [wheel.oms.client :as oms]
             [wheel.marketplace.channel :as channel]
             [wheel.middleware.ranging :as ranging]
             [wheel.oms.message :as oms-message]
@@ -24,4 +26,9 @@
       (event/processing-failed ex id :ranging channel-id channel-name))))
 
 (defmethod channel/allocate-order :tata-cliq [channel-id channel-config]
-  (prn channel-id "~~>" channel-config))
+  (try
+    (->> (tata-cliq/new-orders channel-config channel-id)
+         (map tata-cliq-order/to-oms-order)
+         (run! oms/allocate-order))
+    (catch Throwable e
+      (prn e))))

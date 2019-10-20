@@ -41,15 +41,15 @@
   (let [{:keys [address-info order-no order-lines payment-info]} tata-cliq-order
         {:keys [shipping billing]}                               address-info
         {:keys [payment-cost payment-id]}                        payment-info]
-    {:billing     (to-oms-address billing)
-     :shipping    (to-oms-address shipping)
-     :order-no    order-no
-     :payments    [{:amount       payment-cost
-                    :reference-id payment-id}]
-     :order-lines (map (fn [{:keys [article-number price]}]
-                         {:id         article-number
-                          :sale-price price})
-                       order-lines)}))
+    {:billing-address  (to-oms-address billing)
+     :shipping-address (to-oms-address shipping)
+     :order-no         order-no
+     :payments         [{:amount       payment-cost
+                         :reference-id payment-id}]
+     :order-lines      (map (fn [{:keys [article-number price]}]
+                              {:id         article-number
+                               :sale-price price})
+                            order-lines)}))
 
 (comment
   (s/check-asserts true)
