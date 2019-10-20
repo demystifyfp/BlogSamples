@@ -15,7 +15,8 @@
                  [clj-http "3.10.0"]
                  [com.ibm.mq/com.ibm.mq.allclient "9.1.0.0"]
                  [clojurewerkz/quartzite "2.1.0"]
-                 [funcool/cuerdas "2.0.5"]]
+                 [funcool/cuerdas "2.0.5"]
+                 [org.clojure/data.xml "0.0.8"]]
   :main ^:skip-aot wheel.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}

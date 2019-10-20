@@ -12,6 +12,3 @@
 
 (s/def ::address (s/keys :req-un [::first-name ::line1 ::city ::state ::pincode]
                           :opt-un [::last-name ::line2]))
-
-(s/def ::shipping ::address)
-(s/def ::billing ::address)
