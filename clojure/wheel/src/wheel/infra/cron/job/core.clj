@@ -27,7 +27,10 @@
 
 (defn handle [channel-fn ctx]
   (let [{:strs [channel-config cron-job-config]} (qc/from-job-data ctx)]
-    (channel-fn (:channel-id cron-job-config) channel-config)))
+    (try
+      (channel-fn (:channel-id cron-job-config) channel-config)
+      (catch Throwable ex
+        (prn "==>" ex)))))
 
 (defn schedule [scheduler {:keys [channel-id]
                            :as   cron-job-config}]

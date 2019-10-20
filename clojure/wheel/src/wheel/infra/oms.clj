@@ -41,3 +41,14 @@
                listener   (message-listener :ranging :oms/items-ranged)]
            (start-consumer queue-name jms-ranging-session listener))
   :stop (stop ranging-consumer))
+
+(mount/defstate order-allocating-session
+  :start (.createSession ibmmq/jms-conn false Session/AUTO_ACKNOWLEDGE)
+  :stop (stop order-allocating-session))
+
+(mount/defstate order-allocating-producer
+  :start (let [queue-name       (:order-allocating-queue-name (config/oms-settings))
+               ibmmq-queue-name (str "queue:///" queue-name)
+               destination      (.createQueue order-allocating-session ibmmq-queue-name)]
+           (.createProducer order-allocating-session destination))
+  :stop (stop order-allocating-producer))
