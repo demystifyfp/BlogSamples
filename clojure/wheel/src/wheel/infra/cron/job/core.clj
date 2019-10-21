@@ -8,14 +8,14 @@
             [wheel.middleware.event :as event]
             [wheel.infra.log :as log]))
 
-(defmulti jobtype :type)
+(defmulti job-type :type)
 
 (defn- identifier [{:keys [channel-id type]}]
   (str channel-id "/" (name type)))
 
 (defn- create-job [channel-config cron-job-config]
   (qj/build
-   (qj/of-type (jobtype cron-job-config))
+   (qj/of-type (job-type cron-job-config))
    (qj/using-job-data {:channel-config  channel-config
                        :cron-job-config cron-job-config})
    (qj/with-identity (qj/key (identifier cron-job-config)))))

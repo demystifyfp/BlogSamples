@@ -6,5 +6,5 @@
 (qj/defjob AllocateOrderJob [ctx]
   (job/handle channel/allocate-order ctx))
 
-(defmethod job/jobtype :allocate-order [_]
+(defmethod job/job-type :allocate-order [_]
   AllocateOrderJob)
